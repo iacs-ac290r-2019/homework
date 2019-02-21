@@ -1,0 +1,26 @@
+Build yaml-cpp from Source
+
+$ cd /d/SoftwareLibraries
+$ git clone https://github.com/jbeder/yaml-cpp.git yaml-cpp
+
+On Windows Terminal (Cmder)
+$ cd yaml_cpp
+$ mkdir build_msvc
+$ cd build_msvc
+$ cmake ..
+--> output is a Visual Studio solution.  Build this with
+
+$ msbuild YAML_CPP.sln
+--> Success. Output is taml-cpp/build_msvc/Debug/libyaml-cppmd.lib
+Note: above command builds in default configuration, which here is Debug mode.
+
+$ msbuild YAML_CPP.sln /pConfiguration=Release
+--> Success. Output is taml-cpp/build_msvc/Release/libyaml-cppmd.lib
+
+On Ubuntu 18.04 (Terminal)
+$ cd yaml_cpp
+$ mkdir build_gcc
+$ cd build_gcc
+$ cmake ..
+$ make
+--> Success.  Output is libtaml-cpp.so
