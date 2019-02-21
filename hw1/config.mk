@@ -1,5 +1,6 @@
 # C++ compiler
-cxx=g++ -fopenmp
+# cxx=g++ -fopenmp
+cxx=g++
 
 # Compilation flags
 cflags=-Wall -ansi -std=c++17 -O3
@@ -10,17 +11,22 @@ cflags=-Wall -ansi -std=c++17 -O3
 cxx_out=-o $@.x $^
 
 # BLAS/LAPACK flags for linear algebra
-lp_link=-llapack -lblas
+lapack_link=-llapack -lblas
+
+# Root directory for manually installed software libraries; environment variable SOFTWARE_LIBRARY_DIR
+software_libs_include=$(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
+software_libs_link=$(addprefix -L,$(SOFTWARE_LIBRARY_DIR))
 
 # Boost flags are read using environment variable BOOST_DIR
 boost_include=$(addprefix -I,$(BOOST_DIR))
-boost_link=$(addsuffix($(addprefix -l,$(BOOST_DIR)),"/bin.v2/libs")
 
 # yaml-cpp flags for parsing YAML configuration file
-# TODO
+yaml_include=$(addsuffix /yaml-cpp/include, $(software_libs_include))
+yaml_link=$(addsuffix /yaml-cpp/lib/libyaml-cpp.so, $(software_libs_link))
+# yaml_link=-Llibyaml-cpp.so
 
 # Additional include directories
-includes=$(boost_include)
+includes=$(boost_include) $(yaml_include)
 
 # Linker flags
-linkage=$(lp_link)
+linkage=$(lapack_link) $(yaml_link)

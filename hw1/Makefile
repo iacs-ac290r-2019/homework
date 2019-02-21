@@ -1,3 +1,6 @@
+# Warn on unset variables
+MAKEFLAGS=--warn-undefined-variables
+
 # Include the configuration file
 include config.mk
 
