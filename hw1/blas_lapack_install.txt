@@ -1,0 +1,5 @@
+Install BLAS and LAPACK
+
+Ubuntu 18.04
+$ sudo apt install libblas-dev
+$ sudo apt install liblapack-dev

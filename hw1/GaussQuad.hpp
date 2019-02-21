@@ -1,0 +1,7 @@
+class GaussQuad
+{
+    public:
+
+    private:
+
+};
