@@ -15,18 +15,17 @@ lapack_link=-llapack -lblas
 
 # Root directory for manually installed software libraries; environment variable SOFTWARE_LIBRARY_DIR
 software_libs_include=$(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
-software_libs_link=$(addprefix -L,$(SOFTWARE_LIBRARY_DIR))
+software_libs_link=$(addprefix -L, $(addsuffix /Lib, $(SOFTWARE_LIBRARY_DIR)))
 
 # Boost flags are read using environment variable BOOST_DIR
 boost_include=$(addprefix -I,$(BOOST_DIR))
 
 # yaml-cpp flags for parsing YAML configuration file
 yaml_include=$(addsuffix /yaml-cpp/include, $(software_libs_include))
-yaml_link=$(addsuffix /yaml-cpp/lib/libyaml-cpp.so, $(software_libs_link))
-# yaml_link=-Llibyaml-cpp.so
+yaml_link=-lyaml-cpp
 
 # Additional include directories
 includes=$(boost_include) $(yaml_include)
 
 # Linker flags
-linkage=$(lapack_link) $(yaml_link)
+linkage=$(lapack_link) $(software_libs_link) $(yaml_link)
