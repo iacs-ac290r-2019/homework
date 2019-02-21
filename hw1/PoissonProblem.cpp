@@ -12,12 +12,36 @@
 // *********************************************************************************************************************
 // Constructor
 PoissonProblem::PoissonProblem(string fname) :
-    f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0)
+    f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname(fname)
 {
+    // https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
+
     // Load the YAML configuration file
-    // TODO: replace hard coded example file name with fname
-    YAML::Node config = YAML::LoadFile("example_1.yml");
+    YAML::Node config = YAML::LoadFile(fname);
 
     // Set the members to the configured values
+    f = config["f"].as<vector<double>>();
+    g = config["g"].as<double>();
+    h = config["h"].as<double>();
+    n = config["n"].as<int>();
+    k = config["k"].as<int>();
+    q = config["q"].as<int>();
+}
 
+// Constructor
+void PoissonProblem::summary()
+{
+    // Summarize this problem instance
+    cout << format("Loaded 1D Poisson Problem from configuration file %1%.\n") % fname;
+    cout << format("g=%1%\n") % g;
+    cout << format("h=%1%\n") % h;
+    cout << format("n=%1%\n") % n;
+    cout << format("k=%1%\n") % k;
+    cout << format("q=%1%\n") % q;
+    cout << format("f vector of %1% elements:\n") % f.size();
+    for (double x : f)
+    {
+        cout << format("%4.2f,  ") % x;
+    }
+    cout << "\n";
 }

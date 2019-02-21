@@ -19,6 +19,9 @@ n: 8
 # Set the degrees of freedom per element; 2 for piecewise linear elements
 k: 2
 
+# Set the number of quadrature points; 1 uses the midpoint
+q: 1
+
 # *****************************************************************************
 # Force function as a string
 force_func: |
@@ -30,4 +33,3 @@ force_func: |
 # *****************************************************************************
 # Set the force vector; length should match n
 f: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-

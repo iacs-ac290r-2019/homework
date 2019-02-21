@@ -23,6 +23,12 @@
 #include <string>
     using std::string;
 
+#include <iostream>
+    using std::cout;
+
+#include <boost/format.hpp>
+    using boost::format;
+
 // YAML
 #include<yaml-cpp/yaml.h>
 
@@ -58,6 +64,10 @@ class PoissonProblem
         /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
         int q;
 
+        /// Write a summary to the console
+        void summary();
+
     private:
+        string fname;
 
 };

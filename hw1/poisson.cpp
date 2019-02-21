@@ -8,18 +8,27 @@
  */
 
 // *********************************************************************************************************************
+// Libraries
 #include <iostream>
     using std::cout;
 
 #include <boost/format.hpp>
     using boost::format;
 
-#include<yaml-cpp/yaml.h>
+// Local dependencies
+#include "PoissonProblem.hpp"
 
 // *********************************************************************************************************************
 int main()
 {
-    int n =42;
-    cout << format("Hello.  n=%1%\n") % n;
+    // Name of the configuration file
+    // TODO: change this to command line argument
+    string fname("example_1.yml");
+    // Status update
+    cout << format("Loading configuration file %1%:\n") % fname;    
+    // Set up the problem instance from the configuration file
+    PoissonProblem prob(fname);
+    // Print summary to screen
+    prob.summary();
     return 0;
 }
