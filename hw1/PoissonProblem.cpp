@@ -10,7 +10,12 @@
 #include "PoissonProblem.hpp"
 
 // *********************************************************************************************************************
-// Constructor
+// Default Constructor
+PoissonProblem::PoissonProblem() :
+    f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname("")
+{}
+
+// Constructor - build from an input file
 PoissonProblem::PoissonProblem(string fname) :
     f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname(fname)
 {
@@ -26,6 +31,13 @@ PoissonProblem::PoissonProblem(string fname) :
     n = config["n"].as<int>();
     k = config["k"].as<int>();
     q = config["q"].as<int>();
+
+    // Check that length of f is equal to n+1
+    if (f.size() != n+1)
+    {
+        string msg = (format("Error: length of f %1% is not equal to n+1 = %2%.\n") % f.size() % (n+1)).str();
+        throw std::runtime_error(msg);
+    }
 }
 
 // Constructor

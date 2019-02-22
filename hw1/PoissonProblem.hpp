@@ -13,6 +13,8 @@
 // Silence selected GCC warnings
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wreorder"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wcatch-value="
 #endif
 
 // *********************************************************************************************************************
@@ -39,34 +41,38 @@
  */
 class PoissonProblem
 {
-    public:
-        /** Constructor: load from a YAML file
-         * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
-         */
-        PoissonProblem(string fname);
+public:
+    /** Default constructor: create an empty problem instance     */
+    PoissonProblem();
 
-        /// Vector of sampled values of f(x) at the node points
-        vector<double> f;
+    /** Constructor: load from a YAML file
+     * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
+     */
+    PoissonProblem(string fname);
 
-        /// The boundary condition u(1) = g
-        double g;
+    /// Write a summary to the console
+    void summary();
 
-        /// The boundary condition u_x(0) = h
-        double h;
+private:
+    /// Vector of sampled values of f(x) at the node points
+    vector<double> f;
 
-        /// The number of elements, e.g. 1024
-        int n;
+    /// The boundary condition u(1) = g
+    double g;
 
-        /// The degrees of freedom for each node, e.g. 2 for piecewise linear elements
-        int k;
+    /// The boundary condition u_x(0) = h
+    double h;
 
-        /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
-        int q;
+    /// The number of elements, e.g. 1024
+    int n;
 
-        /// Write a summary to the console
-        void summary();
+    /// The degrees of freedom for each node, e.g. 2 for piecewise linear elements
+    int k;
 
-    private:
-        string fname;
+    /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
+    int q;
+
+    /// The name of the configuration file
+    string fname;
 
 };

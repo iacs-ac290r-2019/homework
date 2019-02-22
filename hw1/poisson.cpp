@@ -26,8 +26,19 @@ int main()
     string fname("example_1.yml");
     // Status update
     cout << format("Loading configuration file %1%:\n") % fname;    
+
     // Set up the problem instance from the configuration file
-    PoissonProblem prob(fname);
+    // Need a try / catch block because bad input throws a runtime error
+    PoissonProblem prob;
+    try
+    {
+        prob = PoissonProblem(fname);
+    }
+    catch (std::runtime_error e) 
+    {
+        cout << e.what();
+        return 1;
+    }
     // Print summary to screen
     prob.summary();
     return 0;
