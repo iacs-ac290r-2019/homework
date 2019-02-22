@@ -15,7 +15,7 @@ lapack_link=-llapack -lblas
 
 # Root directory for manually installed software libraries; environment variable SOFTWARE_LIBRARY_DIR
 software_libs_include=$(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
-software_libs_link=$(addprefix -L, $(addsuffix /Lib, $(SOFTWARE_LIBRARY_DIR)))
+software_libs_link=$(addprefix -L, $(addsuffix /lib, $(SOFTWARE_LIBRARY_DIR)))
 
 # Boost flags are read using environment variable BOOST_DIR
 boost_include=$(addprefix -I,$(BOOST_DIR))

@@ -31,5 +31,5 @@ force_func: |
     }
 
 # *****************************************************************************
-# Set the force vector; length should match n
-f: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+# Set the force vector; length should match n+1
+f: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

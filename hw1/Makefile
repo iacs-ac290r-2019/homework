@@ -5,7 +5,7 @@ MAKEFLAGS=--warn-undefined-variables
 include config.mk
 
 # Lists of intermediate object files (not executables)
-objs=PoissonProblem.o GaussQuad.o
+objs=PoissonProblem.o GaussQuad.o poisson.o
 
 # Corresponding source files for these object files
 src=$(patsubst %.o,%.cpp,$(objs) $(mg_objs))
@@ -26,12 +26,12 @@ all: $(execs)
 clean:
 	rm -f $(objs) $(execs_x)
 
-# Build object files from source
+# Build object files from source, including executables
 %.o: %.cpp
-	$(cxx) $(includes) $(cflags) $(linkage) -c $<
+	$(cxx) -c $(includes) $(cflags) $<
 
-# Build and Link executables from object files
-poisson: poisson.cpp $(objs)
+# Link executables from object files
+poisson.x:
 	$(cxx) $(includes) $(cflags) $(linkage) $(cxx_out)
 
 # The PHONY command tells GNU Make than "clean" is a phony target, which means
