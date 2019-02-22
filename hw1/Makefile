@@ -1,16 +1,16 @@
-# *****************************************************************************
+# *************************************************************************************************
 # Set environment
-# *****************************************************************************
+# *************************************************************************************************
 # Include the configuration file
 include config.mk
 
 # Include the file dependencies
 include Makefile.dep
 
-# *****************************************************************************
+# *************************************************************************************************
 # Source, object and executable files
-# *****************************************************************************
-# List of source files for non-executables (e.g. classes); filename.cpp
+# *************************************************************************************************
+# List of source files; filename.cpp.  Includes both executables and intermediates.
 SRC := PoissonProblem.cpp GaussQuad.cpp poisson.cpp
 
 # Lists of object files; filename.o
@@ -22,9 +22,9 @@ EXEC := poisson
 # List of executables (with .x suffix)
 EXEC_X=$(patsubst %, %.x, $(EXEC))
 
-# *****************************************************************************
+# *************************************************************************************************
 # Convenience targets: all, clean, default
-# *****************************************************************************
+# *************************************************************************************************
 # Define target "all" to build all executables
 all: $(EXEC)
 
@@ -39,14 +39,14 @@ clean:
 # that it doesn't correspond to an actual file called "clean'.
 .PHONY: clean
 
-# *****************************************************************************
+# *************************************************************************************************
 # Rules to build object and executable filess
-# *****************************************************************************
+# *************************************************************************************************
 # Build object files from source (including executables)
 %.o: %.cpp
 	$(CXX) $(CXX_OUT_OBJ) $(CFLAGS) $(CINCLUDE) \$(NEWLINE)
 
 # Link executables from object files
-poisson: $(OBJ)
+$(EXEC): $(OBJ)
 	$(CXX) $(CXX_OUT_EXE) $(CFLAGS) $(LDFLAGS) $(LDLIBS) \$(NEWLINE)
 
