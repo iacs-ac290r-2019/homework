@@ -53,6 +53,16 @@ public:
     /// Write a summary to the console
     void summary();
 
+    /** Create the element stiffness matrix, K_element, of size kxk
+     * 
+     * @param[in] i the element row number, e.g. 1 or 2
+     * @param[in] j the element column number, e.g. 1 or 2
+     * @param[out] Ke, an array of size k^2
+     * 
+     * This matrix will be stored in column major order for LAPACK compatibility.
+     */
+    void K_element(int i, int j, double *Ke);
+
 private:
     /// Vector of sampled values of f(x) at the node points
     vector<double> f;

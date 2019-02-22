@@ -15,6 +15,7 @@ PoissonProblem::PoissonProblem() :
     f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname("")
 {}
 
+// *********************************************************************************************************************
 // Constructor - build from an input file
 PoissonProblem::PoissonProblem(string fname) :
     f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname(fname)
@@ -40,6 +41,7 @@ PoissonProblem::PoissonProblem(string fname) :
     }
 }
 
+// *********************************************************************************************************************
 // Constructor
 void PoissonProblem::summary()
 {
@@ -56,4 +58,11 @@ void PoissonProblem::summary()
         cout << format("%4.2f,  ") % x;
     }
     cout << "\n";
+}
+
+// *********************************************************************************************************************
+// Build the element stiffness matrix, of size kxk
+void PoissonProblem::K_element(int i, int j, double *Ke)
+{
+    ;
 }
