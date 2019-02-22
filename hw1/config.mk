@@ -52,7 +52,9 @@ CXX_OUT_EXE = -o $@.x $^
 CINCLUDE_USR := $(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
 
 # Boost flags are read using environment variable BOOST_DIR
-CINCLUDE_BOOST=$(addprefix -I,$(BOOST_DIR))
+ifdef BOOST_DIR
+	CINCLUDE_BOOST=$(addprefix -I,$(BOOST_DIR))
+endif
 
 # yaml-cpp flags for parsing YAML configuration file
 CINCLUDE_YAML=$(addsuffix /yaml-cpp/include, $(CINCLUDE_USR))
