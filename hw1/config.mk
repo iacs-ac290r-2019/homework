@@ -78,8 +78,14 @@ LDLIB_YAML := -lyaml-cpp
 # Generate linker arguments LDFLAGS and LDLIBS
 # *************************************************************************************************
 # Additional include directories
-CINCLUDE := \
-\$(NEWLINE) $(TAB) $(CINCLUDE_BOOST) \
+# Only include boost if it was supplied manually
+CINCLUDE = ""
+ifdef BOOST_DIR
+	CINCLUDE := \$(NEWLINE) $(TAB) $(CINCLUDE_BOOST)
+endif
+
+# yaml-cpp
+CINCLUDE := $(CINCLUDE)\
 \$(NEWLINE) $(TAB) $(CINCLUDE_YAML)
 
 # Linker flags
