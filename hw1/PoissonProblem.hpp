@@ -30,13 +30,12 @@
     using boost::format;
 
 // YAML
-#include<yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h>
 
 // *********************************************************************************************************************
 /**
  * @class PoissonProblem
- *  @brief Class defining one instance of the 1D Poisson problem, i.e. boundary values, f(x), and
- *  the number of grid points.
+ *  @brief Class to define and solve one instance of the 1D Poisson problem.
  */
 class PoissonProblem
 {

@@ -8,19 +8,37 @@ $ cd yaml_cpp
 $ mkdir build_msvc
 $ cd build_msvc
 $ cmake ..
---> output is a Visual Studio solution.  Build this with
-
+--> output is a Visual Studio solution.  Build this with command line msbuild call:
 $ msbuild YAML_CPP.sln
 --> Success. Output is taml-cpp/build_msvc/Debug/libyaml-cppmd.lib
 Note: above command builds in default configuration, which here is Debug mode.
-
 $ msbuild YAML_CPP.sln /pConfiguration=Release
 --> Success. Output is taml-cpp/build_msvc/Release/libyaml-cppmd.lib
+Create a symbolic link to /d/SoftwareLibaries/lib
 
 On Ubuntu 18.04 (Terminal)
 $ cd yaml_cpp
 $ mkdir build_gcc
 $ cd build_gcc
 $ cmake ..
-$ make
+$ make -j32
 --> Success.  Output is libtaml-cpp.so
+Now create a symlink
+$ ln -s libyaml-cpp.a ~/SoftwareLibraries/lib/libyaml-cpp.a
+
+On Odyssey
+$ load module gcc/8.2.0-fasrc01
+$ load module cmake/3.12.1-fasrc01
+$ mkdir ~/SoftwareLibraries
+$ cd ~/SoftwareLibraries
+$ git clone https://github.com/jbeder/yaml-cpp.git
+$ cd yaml-cpp
+$ mkdir build
+$ cmake -DBUILD_SHARE_LIBS=OFF ..
+$ make -j32
+--> build succeeds
+Now create a symbolic link:
+$ ln libyaml-cpp.a ~/libyaml-cpp.a ~/SoftwareLibraries/lib/libyaml-cpp.a
+Note: This step is very tricky! Creating a symbolic (soft link) works fine for me on Ubuntu 18.04,
+but on Odyssey / Centos 7, the linker ld was unable to find libyaml.a when it was a symlink!
+It took a *long* time to realize that a hard link worked but not a soft link.
