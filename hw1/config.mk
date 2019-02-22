@@ -79,7 +79,7 @@ LDLIB_YAML := -lyaml-cpp
 # *************************************************************************************************
 # Additional include directories
 # Only include boost if it was supplied manually
-CINCLUDE = ""
+CINCLUDE := 
 ifdef BOOST_DIR
 	CINCLUDE := \$(NEWLINE) $(TAB) $(CINCLUDE_BOOST)
 endif
