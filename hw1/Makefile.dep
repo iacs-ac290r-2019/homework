@@ -3,4 +3,4 @@ PoissonProblem.o: PoissonProblem.hpp PoissonProblem.cpp
 GaussQuad.o: GaussQuad.hpp GaussQuad.cpp
 
 # Executables
-poisson.o: poisson.cpp PoissonProblem.hpp GaussQuad.hpp
+poisson.x: poisson.o PoissonProblem.o GaussQuad.o

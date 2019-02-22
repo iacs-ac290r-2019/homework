@@ -7,7 +7,6 @@ cflags=-Wall -ansi -std=c++17 -O3
 
 # Output command
 # Note $@ is a shorthand for the file to be built and $^ is a shorthand for all the dependencies. 
-# (Can also use $< to mean the first dependency only.)
 cxx_out=-o $@.x $^
 
 # BLAS/LAPACK flags for linear algebra
@@ -25,7 +24,9 @@ yaml_include=$(addsuffix /yaml-cpp/include, $(software_libs_include))
 yaml_link=-lyaml-cpp
 
 # Additional include directories
-includes=$(boost_include) $(yaml_include)
+includes=\
+	$(boost_include) \
+	$(yaml_include)
 
 # Linker flags
 linkage=$(lapack_link) $(software_libs_link) $(yaml_link)

@@ -1,20 +1,20 @@
 # Warn on unset variables
-MAKEFLAGS=--warn-undefined-variables
+MAKEFLAGS=--warn-undefined-variables -j32
 
 # Include the configuration file
 include config.mk
 
-# Lists of intermediate object files (not executables)
-objs=PoissonProblem.o GaussQuad.o poisson.o
+# List of source files for non-executables (e.g. classes); filename.cpp
+src=PoissonProblem.cpp GaussQuad.cpp
 
-# Corresponding source files for these object files
-src=$(patsubst %.o,%.cpp,$(objs) $(mg_objs))
+# Lists of intermediate object files (not executables); filename.o
+objs = $(patsubst %.cpp,%.o,$(src))
 
 # List of executables with .x suffix
-execs_x= poisson.x
+execs_x = poisson.x
 
 # Lists of executables (prefix only)
-execs=$(patsubst %.x,%,$(execs_x) $(mg_execs))
+execs=$(patsubst %.x,%,$(execs_x))
 
 # Define target for make all
 all: $(execs)
@@ -28,11 +28,16 @@ clean:
 
 # Build object files from source, including executables
 %.o: %.cpp
-	$(cxx) -c $(includes) $(cflags) $<
+	$(cxx) -c $< \
+		$(cflags) \
+		$(includes) 
 
-# Link executables from object files
-poisson.x:
-	$(cxx) $(includes) $(cflags) $(linkage) $(cxx_out)
+# Build and link executables
+poisson: poisson.cpp $(objs)
+	$(cxx) $(cxx_out) \
+		$(cflags) \
+		$(includes) \
+		$(linkage) 
 
 # The PHONY command tells GNU Make than "clean" is a phony target, which means
 # that it doesn't correspond to an actual file called "clean'.
