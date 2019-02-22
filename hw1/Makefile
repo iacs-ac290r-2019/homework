@@ -1,44 +1,57 @@
+# *****************************************************************************
+# Set environment
 # Warn on unset variables
 MAKEFLAGS=--warn-undefined-variables -j32
 
 # Include the configuration file
 include config.mk
 
+# Include the file dependencies
+include Makefile.dep
+
+# *****************************************************************************
+# Source, object and executable files
 # List of source files for non-executables (e.g. classes); filename.cpp
-src=PoissonProblem.cpp GaussQuad.cpp
+SRC=PoissonProblem.cpp GaussQuad.cpp
 
 # Lists of intermediate object files (not executables); filename.o
-objs = $(patsubst %.cpp,%.o,$(src))
-
-# List of executables with .x suffix
-execs_x = poisson.x
+OBJ := $(patsubst %.cpp, %.o, $(SRC))
 
 # Lists of executables (prefix only)
-execs=$(patsubst %.x,%,$(execs_x))
+EXEC := poisson
 
+# List of executables (with .x suffix)
+EXEC_X=$(patsubst %, %.x, $(EXEC))
+
+# *****************************************************************************
 # Define target for make all
-all: $(execs)
-
-# Include the file dependencies
--include Makefile.dep
+all: $(EXEC)
 
 # A Makefile target to remove all the built files
 clean:
-	rm -f $(objs) $(execs_x)
+	rm -f $(OBJ) $(EXEC_X)
 
-# Build object files from source, including executables
+# *****************************************************************************
+# Build object files from source (not executables)
 %.o: %.cpp
 	$(cxx) -c $< \
 		$(cflags) \
-		$(includes) 
+		$(includes) \
 
-# Build and link executables
-poisson: poisson.cpp $(objs)
+
+# *****************************************************************************
+# Build and link executables from source and object files
+poisson: poisson.cpp $(OBJ)
 	$(cxx) $(cxx_out) \
 		$(cflags) \
 		$(includes) \
-		$(linkage) 
+		$(linkage) \
+
+
+# *****************************************************************************
+# Set default goal to all
+.DEFAULT_GOAL := all
 
 # The PHONY command tells GNU Make than "clean" is a phony target, which means
 # that it doesn't correspond to an actual file called "clean'.
-.PHONY: clean depend
+.PHONY: clean

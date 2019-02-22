@@ -1,11 +1,10 @@
 # C++ compiler
-# cxx=g++ -fopenmp
-cxx=g++
+cxx=g++ -fopenmp
 
 # Compilation flags
 cflags=-Wall -ansi -std=c++17 -O3
 
-# Output command
+# Output command for executables
 # Note $@ is a shorthand for the file to be built and $^ is a shorthand for all the dependencies. 
 cxx_out=-o $@.x $^
 
