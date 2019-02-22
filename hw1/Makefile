@@ -1,8 +1,6 @@
 # *****************************************************************************
 # Set environment
-# Warn on unset variables
-MAKEFLAGS=--warn-undefined-variables -j32
-
+# *****************************************************************************
 # Include the configuration file
 include config.mk
 
@@ -11,10 +9,11 @@ include Makefile.dep
 
 # *****************************************************************************
 # Source, object and executable files
+# *****************************************************************************
 # List of source files for non-executables (e.g. classes); filename.cpp
-SRC=PoissonProblem.cpp GaussQuad.cpp
+SRC := PoissonProblem.cpp GaussQuad.cpp poisson.cpp
 
-# Lists of intermediate object files (not executables); filename.o
+# Lists of object files; filename.o
 OBJ := $(patsubst %.cpp, %.o, $(SRC))
 
 # Lists of executables (prefix only)
@@ -24,34 +23,30 @@ EXEC := poisson
 EXEC_X=$(patsubst %, %.x, $(EXEC))
 
 # *****************************************************************************
-# Define target for make all
+# Convenience targets: all, clean, default
+# *****************************************************************************
+# Define target "all" to build all executables
 all: $(EXEC)
 
-# A Makefile target to remove all the built files
+# Define target "clean" to remove all the built files
 clean:
 	rm -f $(OBJ) $(EXEC_X)
 
-# *****************************************************************************
-# Build object files from source (not executables)
-%.o: %.cpp
-	$(cxx) -c $< \
-		$(cflags) \
-		$(includes) \
-
-
-# *****************************************************************************
-# Build and link executables from source and object files
-poisson: poisson.cpp $(OBJ)
-	$(cxx) $(cxx_out) \
-		$(cflags) \
-		$(includes) \
-		$(linkage) \
-
-
-# *****************************************************************************
 # Set default goal to all
 .DEFAULT_GOAL := all
 
 # The PHONY command tells GNU Make than "clean" is a phony target, which means
 # that it doesn't correspond to an actual file called "clean'.
 .PHONY: clean
+
+# *****************************************************************************
+# Rules to build object and executable filess
+# *****************************************************************************
+# Build object files from source (including executables)
+%.o: %.cpp
+	$(CXX) $(CXX_OUT_OBJ) $(CFLAGS) $(CINCLUDE) \$(NEWLINE)
+
+# Link executables from object files
+poisson: $(OBJ)
+	$(CXX) $(CXX_OUT_EXE) $(CFLAGS) $(LDFLAGS) $(LDLIBS) \$(NEWLINE)
+
