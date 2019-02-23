@@ -124,11 +124,7 @@ int main()
     // Run test suite
     run_tests();
 
-    // Name of the configuration file
-    // TODO: change this to command line argument
-    // string fname("example_1.yml");
-    // Status update
-    // cout << format("Loading configuration file %1%:\n") % fname;    
+    // TODO: accept a command line argument and load the file of that name, then solve it
 
     // Normal program exit
     return 0;

@@ -1,6 +1,10 @@
 # MSE
 *.x
 
+# Doxygen build directories
+hw1/html
+hw1/latex
+
 # Prerequisites
 *.d
 
