@@ -16,7 +16,8 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
     f(vector<double>()), 
     g(0.0), h(0.0), n(0), d(0), q(0),
     x(vector<double>()),
-    K(nullptr)
+    K(nullptr),
+    F(nullptr)
 {
     // https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
     try
@@ -59,29 +60,10 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
 
 PoissonFiniteElement::~PoissonFiniteElement()
 {
-    // Don't need to check if K was assigned memory b/c it is safe (and legal) to delete nullptr in C++17
+    // Don't need to check if K, F were assigned memory b/c it is safe (and legal) to delete nullptr in C++17
     delete [] K;
+    delete [] F;
 }
-
-// *********************************************************************************************************************
-// Compute K_element; this is a 2x2 matrix for piecewise linear basis function.
-// See Hughes p. 45.
-void PoissonFiniteElement::K_element(int e, double *Ke)
-{
-    // Calculation will depend on the degrees of freedom, d
-    // For now the only supported configuration is piecewise linear with d=2
-    switch (d)
-    {
-        case 2:
-            // Dispatch call to K_element_2
-            K_element_2(e, Ke);
-            break;
-        default:
-            string msg = (format("Error: degrees of frredom d=%i not supported.") % d).str();
-            throw std::logic_error(msg);
-    }
-}
-
 
 // *********************************************************************************************************************
 void PoissonFiniteElement::K_element_2(int e, double *Ke)
@@ -134,8 +116,9 @@ void PoissonFiniteElement::assemble_K_2()
     {
         // Compute K_element for this element
         K_element_2(e, Ke);
+
         // Increment relevant entries in global K matrix
-        // Formula is on bottom of p. 42 in Hughes
+        // Formula is on bottom of p. 42 in Hughes, equations 1.14.2 through 1.14.5
         // For all Hughes formulas, shift from 1-based to 0-based indexing
 
         // The two diagonal entries
@@ -152,10 +135,49 @@ void PoissonFiniteElement::assemble_K_2()
     }
 
     // Handle the last element, e=n-1; only the local node (e,e) contributes
-    // because node n is locked by the constraint
+    // because node n is locked by the constraint.
+    // See Hughes p. 43, equation 1.14.6.
     int e=n-1;
     K_element_2(e, Ke);
     K[ij2k(e, e)] += Ke[ij2k_elt(0, 0)];
+}
+
+// *****************************************************************************************************************
+// See Hughes p. 46, top
+void PoissonFiniteElement::F_element(int e, double *Fe)
+{
+    // Compute the prefactor C = h_e / 6
+    double C = h_e(e) / 6.0;
+
+    // Get the two local forces from f
+    double f1 = f[e];
+    double f2 = f[e+1];
+    
+    // Populate Fe using f1 and f2
+    Fe[0] = C * (2*f1 + f2);
+    Fe[1] = C * (f1 + 2*f2);
+
+    // Add boundary terms; Hughes p. 41, equation 1.13.12
+    // Left hand boundary; e==0, adjust for u'(0) = h
+    if (e == 0)
+    {
+        // Get the width of this element
+        double w = h_e(e);
+        // Approximate the delta function of amplitude h with sampled value h / w
+        Fe[0] += h / w;
+    }
+
+    // Right hand boundary; e==n-1, adjust for u(1) = g
+    if (e == (n-1))
+    {
+        // Compute K_element for this element
+        double Ke[4];
+        K_element_2(e, Ke);
+        for (int a=0; a<2; ++a)
+        {
+            Fe[a] -= Ke[ij2k_elt(a,1)] * g;
+        }
+    }
 }
 
 // *********************************************************************************************************************
@@ -198,7 +220,7 @@ void PoissonFiniteElement::print_K() const
         // Print each entry in row i
         for (int j=0; j<n; ++j)
         {
-            cout << format("%5.3f ") % K_ij(i , j);
+            cout << format("%5.2f ") % K_ij(i , j);
         }
         cout << "\n";
     }

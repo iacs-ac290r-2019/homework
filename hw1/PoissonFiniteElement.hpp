@@ -57,12 +57,57 @@ class PoissonFiniteElement
     ~PoissonFiniteElement();
 
     // *****************************************************************************************************************
+    // Data elements
+    private:
+    /// The name of the configuration file used to set up the problem
+    string fname;
+
+    /// Vector of sampled values of f(x) at the node points
+    vector<double> f;
+
+    /// The boundary condition u(1) = g
+    double g;
+
+    /// The boundary condition u_x(0) = h
+    double h;
+
+    /// The number of elements, e.g. 1024
+    int n;
+
+    /// The degrees of freedom for each node, e.g. 2 for piecewise linear elements
+    int d;
+
+    /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
+    int q;
+
+    /** The grid of node locations; will be uniformly spaced, store a vector 
+     * for extensibility to non-uniform mesh size in the future. */
+    vector<double> x;
+
+    /// The global stiffness matrix, K
+    double *K;
+
+    /// The global force vector, F
+    double *F;
+
+    // *****************************************************************************************************************
     // Accessors
+    public:
+
     inline int num_elements() const
     {return n;}
 
+    /** Access entry (i, j) of the global stiffness matrix K; copy, const
+     *  @param[in] i the row
+     *  @param[in] j the column
+     *  @return K_ij the stiffness K[i, j]
+     */
+    inline double K_ij(int i, int j) const
+    {return K[ij2k(i, j)];}
+
     // *****************************************************************************************************************
     // Calculations of indices and element size
+    public:
 
     /** Convert a pair (i, j) of row and column indices on an mxn matrix to a storage index k 
      *  when the matrix is stored in column-major order for Fortran compatibility.
@@ -93,7 +138,6 @@ class PoissonFiniteElement
     inline int ij2k_elt(int i, int j) const
     {return ij2k_calc(i, j, d);}
 
-
     /** Get the size h of element e
      * 
      *  @param[in] e the index of the element
@@ -104,16 +148,7 @@ class PoissonFiniteElement
 
     // *****************************************************************************************************************
     // Calculation of stiffness matrix K
-
-    /** Create the element stiffness matrix, K_element, of size kxk, in the general case 
-     *  by dispatching a call to the appropriate worker function.
-     * 
-     *  @param[in] e the element number, e.g. 10
-     *  @param[out] Ke, an array of size k^2
-     * 
-     *  This matrix will be stored in column major order for LAPACK compatibility.
-     */
-    void K_element(int e, double *Ke);
+    public:
 
     /** Create the element stiffness matrix, K_element, of size kxk, in the specific case d=2.
      * 
@@ -132,50 +167,26 @@ class PoissonFiniteElement
     /** Assemble the global stiffness matrix K as a dense nxn matrix in the case d=2.*/ 
     void assemble_K_2();
 
-    /** Access entry (i, j) of the global stiffness matrix K; copy, const
-     *  @param[in] i the row
-     *  @param[in] j the column
-     *  @return K_ij the stiffness K[i, j]
+    // *****************************************************************************************************************
+    // Calculation of force vector F
+    public:
+
+    /** Create the element stiffness vector, F_element, of size k, in the specific case d=2
+     * 
+     *  @param[in] e the element number, e.g. 10
+     *  @param[out] Kf, an array of size k
      */
-    inline double K_ij(int i, int j) const
-    {return K[ij2k(i, j)];}
+    void F_element(int e, double *Fe);
+    
 
     // *****************************************************************************************************************
     // Output methods
+    public:
+
     /// Write a summary of problem setup to the console
     void print_problem() const;
 
     /// Write a summary of stiffness matrix K
     void print_K() const;
 
-    // *****************************************************************************************************************
-    // Data elements
-    private:
-    /// The name of the configuration file used to set up the problem
-    string fname;
-
-    /// Vector of sampled values of f(x) at the node points
-    vector<double> f;
-
-    /// The boundary condition u(1) = g
-    double g;
-
-    /// The boundary condition u_x(0) = h
-    double h;
-
-    /// The number of elements, e.g. 1024
-    int n;
-
-    /// The degrees of freedom for each node, e.g. 2 for piecewise linear elements
-    int d;
-
-    /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
-    int q;
-
-    /** The grid of node locations; will be uniformly spaced, store a vector 
-     * for extensibility to non-uniform mesh size in the future. */
-    vector<double> x;
-
-    /// The global stiffness matrix, K
-    double *K;
 };

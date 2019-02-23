@@ -38,7 +38,7 @@ int main()
     pfe.assemble_K();
 
     // Display the stiffness matrix K
-    cout << format("\nAssembled a %1% x %1% stiffness matrix K:") % pfe.num_elements();
+    cout << format("\nAssembled %1% x %1% stiffness matrix K:") % pfe.num_elements();
     pfe.print_K();
 
     // Normal program exit
