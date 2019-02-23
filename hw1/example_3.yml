@@ -1,0 +1,37 @@
+# YAML configuration file for 1D Poisson solver with Finite Element Method
+# Harvard IACS AC 290R
+# Homework 1, Problem 4
+
+# Solve the 1D Poisson equation
+# -u_xx = f(x)
+# u(1) = g
+# -u_x(0) = h
+
+# *****************************************************************************
+# Set the boundary conditions
+# u(1) = g
+g: 1.0
+# u'(0) = h
+h: 1.0
+
+# *****************************************************************************
+# Set the Number of grid points, n
+n: 8
+
+# Set the degrees of freedom per element; 2 for piecewise linear elements
+d: 2
+
+# Set the number of quadrature points; 1 uses the midpoint
+q: 1
+
+# *****************************************************************************
+# Force function as a string
+force_func: |
+    double force_func(double x)
+    {
+        return 1.0;
+    }
+
+# *****************************************************************************
+# Set the force vector; length should match n+1
+f: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

@@ -118,6 +118,13 @@ class PoissonFiniteElement
     inline double F_i(int i) const
     {return F[i];}
 
+    /** Access entry (i) of the solution U
+     *  @param[in] i the row
+     *  @return U_i the function value U(x_i)
+     */
+    inline double U_i(int i) const
+    {return i < n ? U[i] : g;}
+
     // *****************************************************************************************************************
     // Calculations of indices and element size
     public:

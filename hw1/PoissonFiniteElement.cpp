@@ -165,10 +165,8 @@ void PoissonFiniteElement::F_element_2(int e, double *Fe)
     // Left hand boundary; e==0, adjust for u'(0) = h
     if (e == 0)
     {
-        // Get the width of this element
-        double w = h_e(e);
-        // Approximate the delta function of amplitude h with sampled value h / w
-        Fe[0] += h / w;
+        // Increment the force vector by the constraint h
+        Fe[0] += h;
     }
 
     // Right hand boundary; e==n-1, adjust for u(1) = g
@@ -318,4 +316,6 @@ void PoissonFiniteElement::print_U() const
         cout << format("%5.2f ") % U[i];
         cout << "\n";
     }
+    // Print the value at x=1 given by the constraint
+    cout << format("%5.2f ") % g;
 }
