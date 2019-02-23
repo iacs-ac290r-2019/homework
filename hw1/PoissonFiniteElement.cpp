@@ -11,15 +11,16 @@
 
 // *********************************************************************************************************************
 // Constructor - build from an input file
+// See: https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
 PoissonFiniteElement::PoissonFiniteElement(string fname) :
     fname(fname), 
     f(vector<double>()), 
     g(0.0), h(0.0), n(0), d(0), q(0),
     x(vector<double>()),
     K(nullptr),
-    F(nullptr)
+    F(nullptr),
+    U(nullptr)
 {
-    // https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
     try
     {  
         // Load the YAML configuration file
@@ -49,6 +50,7 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
     {
         cout << "Unknown exception encountered in PoissonFiniteElement constructor; returning empty problem.";
     }
+
     // Populate the vector x of node points using a uniform mesh size
     x.resize(n+1);
     for (int i=0; i<=n; ++i)
@@ -57,12 +59,14 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
     }
 }
 
-
+// *********************************************************************************************************************
+// Destructor
 PoissonFiniteElement::~PoissonFiniteElement()
 {
-    // Don't need to check if K, F were assigned memory b/c it is safe (and legal) to delete nullptr in C++17
+    // Don't need to check if they were assigned memory b/c it is safe (and legal) to delete nullptr in C++17
     delete [] K;
     delete [] F;
+    delete [] U;
 }
 
 // *********************************************************************************************************************
@@ -231,6 +235,23 @@ void PoissonFiniteElement::assemble_F_2()
 }
 
 // *********************************************************************************************************************
+void PoissonFiniteElement::solve()
+{
+    // Allocate storage for U
+    U = new double[n];
+
+    // Need to solve the equation Ku = F
+    // Copy the right hand side, F, into u because LAPACK routine overwrites it with the answer
+    for (int i=0; i<n; ++i)
+    {
+        U[i] = F[i];
+    }
+
+    // Solve the equation with solve_matrix
+    solve_matrix(n, K, U);
+}
+
+// *********************************************************************************************************************
 // Print summary of problem setup
 void PoissonFiniteElement::print_problem() const
 {
@@ -257,7 +278,6 @@ void PoissonFiniteElement::print_problem() const
         cout << format("%4.2f,  ") % x_i;
     }
     cout << "\n";
-
 }
 
 // *********************************************************************************************************************
@@ -283,7 +303,19 @@ void PoissonFiniteElement::print_F() const
     // Iterate over rows
     for (int i=0; i<n; ++i)
     {
-        cout << format("%5.2f ") % F_i(i);
+        cout << format("%5.2f ") % F[i];
+        cout << "\n";
+    }
+}
+
+// *********************************************************************************************************************
+void PoissonFiniteElement::print_U() const
+{
+    cout << "\n";
+    // Iterate over rows
+    for (int i=0; i<n; ++i)
+    {
+        cout << format("%5.2f ") % U[i];
         cout << "\n";
     }
 }

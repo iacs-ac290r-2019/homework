@@ -26,4 +26,4 @@ void lapack_fail();
  * \param[in] n the dimension of the matrix.
  * \param[in] A the matrix terms.
  * \param[in] x the source vector, which will be replaced by the solution when the routine exits. */
-void solve_matrix(int n,double *A,double *x);
+void solve_matrix(int n, double *A, double *x);

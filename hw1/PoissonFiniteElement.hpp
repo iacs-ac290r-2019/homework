@@ -38,6 +38,9 @@
 // YAML
 #include <yaml-cpp/yaml.h>
 
+// Local dependencies
+#include "LinearSolve.hpp"
+
 // *********************************************************************************************************************
 /**
  * @class PoissonFiniteElement
@@ -89,6 +92,9 @@ class PoissonFiniteElement
 
     /// The global force vector, F
     double *F;
+
+    /// The solution to the system, u
+    double *U;
 
     // *****************************************************************************************************************
     // Accessors
@@ -193,6 +199,10 @@ class PoissonFiniteElement
     void assemble_F_2();
 
     // *****************************************************************************************************************
+    // Solve the system for U
+    void solve();
+
+    // *****************************************************************************************************************
     // Output methods
     public:
 
@@ -204,5 +214,8 @@ class PoissonFiniteElement
 
     /// Write a summary of force vector F
     void print_F() const;
+
+    /// Write a summary of solution vector U
+    void print_U() const;
 
 };

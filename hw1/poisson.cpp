@@ -48,6 +48,13 @@ int main()
     cout << format("\nAssembled %1% x 1 force vector F:") % pfe.num_elements();
     pfe.print_F();
 
+    // Solve the system
+    pfe.solve();
+
+    // Display the solution u(x)
+    cout << format("\nAssembled %1% x 1 solution vector u:") % pfe.num_elements();
+    pfe.print_U();
+
     // Normal program exit
     return 0;
 }
