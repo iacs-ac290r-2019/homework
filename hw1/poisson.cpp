@@ -37,9 +37,16 @@ int main()
     // Assemble the global stiffness matrix K
     pfe.assemble_K();
 
+    // Assemble the global force vector F
+    pfe.assemble_F();
+
     // Display the stiffness matrix K
     cout << format("\nAssembled %1% x %1% stiffness matrix K:") % pfe.num_elements();
     pfe.print_K();
+
+    // Display the force vector F
+    cout << format("\nAssembled %1% x 1 force vector F:") % pfe.num_elements();
+    pfe.print_F();
 
     // Normal program exit
     return 0;

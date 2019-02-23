@@ -97,13 +97,20 @@ class PoissonFiniteElement
     inline int num_elements() const
     {return n;}
 
-    /** Access entry (i, j) of the global stiffness matrix K; copy, const
+    /** Access entry (i, j) of the global stiffness matrix K
      *  @param[in] i the row
      *  @param[in] j the column
      *  @return K_ij the stiffness K[i, j]
      */
     inline double K_ij(int i, int j) const
     {return K[ij2k(i, j)];}
+
+    /** Access entry (i) of the global force matrix F
+     *  @param[in] i the row
+     *  @return F_i the force F[i]
+     */
+    inline double F_i(int i) const
+    {return F[i];}
 
     // *****************************************************************************************************************
     // Calculations of indices and element size
@@ -176,8 +183,14 @@ class PoissonFiniteElement
      *  @param[in] e the element number, e.g. 10
      *  @param[out] Kf, an array of size k
      */
-    void F_element(int e, double *Fe);
+    void F_element_2(int e, double *Fe);
     
+    /** Assemble the global stiffness force vector F in the general case
+     *  by dispatching a call to the appropriate assembly function.*/ 
+    void assemble_F();
+
+    /** Assemble the global force vector F in the case d=2.*/ 
+    void assemble_F_2();
 
     // *****************************************************************************************************************
     // Output methods
@@ -188,5 +201,8 @@ class PoissonFiniteElement
 
     /// Write a summary of stiffness matrix K
     void print_K() const;
+
+    /// Write a summary of force vector F
+    void print_F() const;
 
 };

@@ -144,7 +144,7 @@ void PoissonFiniteElement::assemble_K_2()
 
 // *****************************************************************************************************************
 // See Hughes p. 46, top
-void PoissonFiniteElement::F_element(int e, double *Fe)
+void PoissonFiniteElement::F_element_2(int e, double *Fe)
 {
     // Compute the prefactor C = h_e / 6
     double C = h_e(e) / 6.0;
@@ -178,6 +178,56 @@ void PoissonFiniteElement::F_element(int e, double *Fe)
             Fe[a] -= Ke[ij2k_elt(a,1)] * g;
         }
     }
+}
+
+// *********************************************************************************************************************
+void PoissonFiniteElement::assemble_F()
+{
+    // Calculation will depend on the degrees of freedom, d
+    // For now the only supported configuration is piecewise linear with d=2
+    switch (d)
+    {
+        case 2:
+            // Dispatch call to assemble_F_2
+            assemble_F_2();
+            break;
+        default:
+            string msg = (format("Error: degrees of frredom d=%i not supported.") % d).str();
+            throw std::logic_error(msg);
+    }
+}
+
+// *********************************************************************************************************************
+void PoissonFiniteElement::assemble_F_2()
+{
+    // Local storage for F_element(e)
+    double Fe[2];
+
+    // Initialize an array for F of size n with all zeroes
+    F = new double[n] {0.0};
+
+    // Iterate over the first n-1 elements, which have the same treatment
+    for (int e=0; e<n-1; ++e)
+    {
+        // Compute F_element for this element
+        F_element_2(e, Fe);
+
+        // Increment relevant entries in global F vector
+        // Formula is at top of p. 44 in Hughes, equations 1.14.6 and 1.14.7
+        // For all Hughes formulas, shift from 1-based to 0-based indexing
+
+        // F[e] += F_element[1]
+        F[e] += Fe[0];
+
+        // F[e+1] += F_element[2]
+        F[e+1] += Fe[1];
+    }
+
+    // Handle the last element, e=n-1; only the local node (e,e) contributes
+    // See Hughes p. 43, equation 1.14.9.
+    int e=n-1;
+    F_element_2(e, Fe);
+    F[e] += Fe[0];
 }
 
 // *********************************************************************************************************************
@@ -222,6 +272,18 @@ void PoissonFiniteElement::print_K() const
         {
             cout << format("%5.2f ") % K_ij(i , j);
         }
+        cout << "\n";
+    }
+}
+
+// *********************************************************************************************************************
+void PoissonFiniteElement::print_F() const
+{
+    cout << "\n";
+    // Iterate over rows
+    for (int i=0; i<n; ++i)
+    {
+        cout << format("%5.2f ") % F_i(i);
         cout << "\n";
     }
 }
