@@ -129,8 +129,8 @@ void PoissonFiniteElement::assemble_K_2()
     // Initialize an array for K of size nxn with all zeroes
     K = new double[n*n] {0.0};
 
-    // Iterate over all n elements
-    for (int e=0; e<n; ++e)
+    // Iterate over the first n-1 elements, which have the same treatment
+    for (int e=0; e<n-1; ++e)
     {
         // Compute K_element for this element
         K_element_2(e, Ke);
@@ -141,14 +141,8 @@ void PoissonFiniteElement::assemble_K_2()
         // The two diagonal entries
         // K[e,e] += K_element[1,1]
         K[ij2k(e, e)] += Ke[ij2k_elt(0, 0)];
-
         // K[e+1, e+1] += K_element[2, 2]
-        // The last entry is NOT incremented for i=n because of the constraint!
-        // Also it would write past the end of the array which is bad :)
-        if (e < n-1)
-        {
-            K[ij2k(e+1, e+1)] += Ke[ij2k_elt(1, 1)];
-        }
+        K[ij2k(e+1, e+1)] += Ke[ij2k_elt(1, 1)];
 
         // The two off diagonal entries are treated symmetrically
         // K[e,e+1] ++ K_element[1, 2]
@@ -156,6 +150,12 @@ void PoissonFiniteElement::assemble_K_2()
         K[ij2k(e+1, e)] += Ke[ij2k_elt(1, 0)];
         K[ij2k(e, e+1)] += Ke[ij2k_elt(0, 1)];
     }
+
+    // Handle the last element, e=n-1; only the local node (e,e) contributes
+    // because node n is locked by the constraint
+    int e=n-1;
+    K_element_2(e, Ke);
+    K[ij2k(e, e)] += Ke[ij2k_elt(0, 0)];
 }
 
 // *********************************************************************************************************************
