@@ -29,9 +29,18 @@ int main()
 
     // Set up the problem instance from the configuration file
     // Need a try / catch block because bad input throws a runtime error
-    PoissonFiniteElement prob{PoissonFiniteElement(fname)};
+    PoissonFiniteElement pfe{PoissonFiniteElement(fname)};
 
     // Print summary of problem setup to screen
-    prob.print_problem();
+    pfe.print_problem();
+
+    // Assemble the global stiffness matrix K
+    pfe.assemble_K();
+
+    // Display the stiffness matrix K
+    cout << format("\nAssembled a %1% x %1% stiffness matrix K:") % pfe.num_elements();
+    pfe.print_K();
+
+    // Normal program exit
     return 0;
 }

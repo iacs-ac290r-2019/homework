@@ -19,7 +19,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wreorder"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wcatch-value="
 #endif
 
 // *********************************************************************************************************************
@@ -48,9 +47,9 @@ class PoissonFiniteElement
 {
     public:
     // *****************************************************************************************************************
-    // Constructor & Destructor
+    //  Constructor & Destructor
     /** Constructor: load from a YAML file
-     * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
+     *  @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
      */
     PoissonFiniteElement(string fname = "");
 
@@ -58,21 +57,96 @@ class PoissonFiniteElement
     ~PoissonFiniteElement();
 
     // *****************************************************************************************************************
-    // Calculations
-    /** Create the element stiffness matrix, K_element, of size kxk
+    // Accessors
+    inline int num_elements() const
+    {return n;}
+
+    // *****************************************************************************************************************
+    // Calculations of indices and element size
+
+    /** Convert a pair (i, j) of row and column indices on an mxn matrix to a storage index k 
+     *  when the matrix is stored in column-major order for Fortran compatibility.
      * 
-     * @param[in] i the element row number, e.g. 1 or 2
-     * @param[in] j the element column number, e.g. 1 or 2
-     * @param[out] Ke, an array of size k^2
-     * 
-     * This matrix will be stored in column major order for LAPACK compatibility.
+     *  @param[in] i the row
+     *  @param[in] j the column
+     *  @param[in] n the number of columns in the matrix
+     *  @return k the storage location
      */
-    void K_element(int i, int j, double *Ke);
+    inline int ij2k_calc(int i, int j, int n) const
+    {return n*j + i;}
+
+    /** Convert a pair (i, j) of row and column indices on the stiffnes matrix to a storage index k
+     * 
+     *  @param[in] i the row on the global stiffness matrix K
+     *  @param[in] j the column on the global stiffness matrix K
+     *  @return k the storage location on the global stiffness matrix K
+     */
+    inline int ij2k(int i, int j) const
+    {return ij2k_calc(i, j, n);}
+
+    /** Convert a pair (i, j) of row and column indices on K_element to a storage index k
+     * 
+     *  @param[in] i the row on the local stiffness matrix K_element
+     *  @param[in] j the column on the local stiffness matrix K_element
+     *  @return k the storage location on the local stiffness matrix K_element
+     */
+    inline int ij2k_elt(int i, int j) const
+    {return ij2k_calc(i, j, d);}
+
+
+    /** Get the size h of element e
+     * 
+     *  @param[in] e the index of the element
+     *  @return h_e the size of element e; will be a constant 1.0/n for uniform mesh size
+     */
+    inline double h_e(int e)  const
+    {return x[e+1] - x[e];}
+
+    // *****************************************************************************************************************
+    // Calculation of stiffness matrix K
+
+    /** Create the element stiffness matrix, K_element, of size kxk, in the general case 
+     *  by dispatching a call to the appropriate worker function.
+     * 
+     *  @param[in] e the element number, e.g. 10
+     *  @param[out] Ke, an array of size k^2
+     * 
+     *  This matrix will be stored in column major order for LAPACK compatibility.
+     */
+    void K_element(int e, double *Ke);
+
+    /** Create the element stiffness matrix, K_element, of size kxk, in the specific case d=2.
+     * 
+     *  @param[in] e the element number, e.g. 10
+     *  @param[out] Ke, an array of size k^2
+     * 
+     *  This matrix will be stored in column major order for LAPACK compatibility.
+     *  See Hughes p. 45 for details of the simple calculation.
+     */
+    void K_element_2(int e, double *Ke);
+
+    /** Assemble the global stiffness matrix K as a dense nxn matrix in the general case
+     *  by dispatching a call to the appropriate assembly function.*/ 
+    void assemble_K();
+
+    /** Assemble the global stiffness matrix K as a dense nxn matrix in the case d=2.*/ 
+    void assemble_K_2();
+
+    /** Access entry (i, j) of the global stiffness matrix K; copy, const
+     *  @param[in] i the row
+     *  @param[in] j the column
+     *  @return K_ij the stiffness K[i, j]
+     */
+    inline double K_ij(int i, int j) const
+    {return K[ij2k(i, j)];}
 
     // *****************************************************************************************************************
     // Output methods
     /// Write a summary of problem setup to the console
     void print_problem() const;
+
+    /// Write a summary of stiffness matrix K
+    void print_K() const;
 
     // *****************************************************************************************************************
     // Data elements
@@ -93,7 +167,7 @@ class PoissonFiniteElement
     int n;
 
     /// The degrees of freedom for each node, e.g. 2 for piecewise linear elements
-    int k;
+    int d;
 
     /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
     int q;
@@ -101,4 +175,7 @@ class PoissonFiniteElement
     /** The grid of node locations; will be uniformly spaced, store a vector 
      * for extensibility to non-uniform mesh size in the future. */
     vector<double> x;
+
+    /// The global stiffness matrix, K
+    double *K;
 };

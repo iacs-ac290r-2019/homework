@@ -17,7 +17,7 @@ h: 0.0
 n: 8
 
 # Set the degrees of freedom per element; 2 for piecewise linear elements
-k: 2
+d: 2
 
 # Set the number of quadrature points; 1 uses the midpoint
 q: 1
