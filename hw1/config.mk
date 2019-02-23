@@ -32,7 +32,7 @@ $(info Running make with up to $(MAKE_JOBS) parallel jobs.$(NEWLINE))
 CXX=g++
 
 # Compilation flags
-CFLAGS= \$(NEWLINE) $(TAB) -fopenmp -Wall -ansi -std=c++17 -O3
+CXX_FLAGS= \$(NEWLINE) $(TAB) -fopenmp -Wall -ansi -std=c++17 -O3
 
 # Output command for object files
 # Note $< is a shorthand for the first dependency
@@ -45,53 +45,57 @@ CXX_OUT_OBJ = -c $< -o $@
 CXX_OUT_EXE = -o $@.x $^
 
 # *************************************************************************************************
-# CINCLUDE: Include paths for additional software libraries 
+# INCLUDE: Include paths for additional software libraries 
 # *************************************************************************************************
 # Root directory for manually installed software libraries; 
 # found in environment variable SOFTWARE_LIBRARY_DIR
-CINCLUDE_USR := $(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
+INCLUDE_USR := $(addprefix -I,$(SOFTWARE_LIBRARY_DIR))
 
 # Boost flags are read using environment variable BOOST_DIR
 ifdef BOOST_DIR
-	CINCLUDE_BOOST=$(addprefix -I,$(BOOST_DIR))
+	INCLUDE_BOOST=$(addprefix -I,$(BOOST_DIR))
 endif
 
 # yaml-cpp flags for parsing YAML configuration file
-CINCLUDE_YAML=$(addsuffix /yaml-cpp/include, $(CINCLUDE_USR))
+INCLUDE_YAML=$(addsuffix /yaml-cpp/include, $(INCLUDE_USR))
 
 # *************************************************************************************************
 # LD: Linker flags for additional libraries
 # *************************************************************************************************
 # Directory with library files (.a) for additional software libraries
-LDFLAGS_USR := $(addprefix -L, $(addsuffix /lib, $(SOFTWARE_LIBRARY_DIR)))
+LD_FLAGS_USR := $(addprefix -L, $(addsuffix /lib, $(SOFTWARE_LIBRARY_DIR)))
 
 # Math library
-LDLIB_MATH := -lm
+LD_LIB_MATH := -lm
 
 # BLAS/LAPACK for linear algebra
-LDLIB_LAPACK := -llapack -lblas
+LD_LIB_LAPACK := -llapack -lblas
 
 # yaml-cpp for YAML file parsing
-LDLIB_YAML := -lyaml-cpp
+LD_LIB_YAML := -lyaml-cpp
 
 # *************************************************************************************************
-# Generate linker arguments LDFLAGS and LDLIBS
+# Generate command line arguments 
+# -I: additional include directories
+# -L: additional library directories
+# -l: additional libraries
 # *************************************************************************************************
-# Initialize CINCLUDE to an empty string
-CINCLUDE := 
-# Additional include directories
+# Additional include directories -I
+# Initialize INCLUDE to an empty string
+INCLUDE := 
 # Only include boost if it was supplied manually
 ifdef BOOST_DIR
-	CINCLUDE := \$(NEWLINE) $(TAB) $(CINCLUDE_BOOST)
+	INCLUDE := \$(NEWLINE) $(TAB) $(INCLUDE_BOOST)
 endif
 
 # yaml-cpp
-CINCLUDE := $(CINCLUDE)\
-\$(NEWLINE) $(TAB) $(CINCLUDE_YAML)
+INCLUDE := $(INCLUDE)\
+\$(NEWLINE) $(TAB) $(INCLUDE_YAML)
 
-# Linker flags
-LDFLAGS := \
-\$(NEWLINE) $(TAB) $(LDFLAGS_USR) 
+# Additional library directories -L
+LD_FLAGS := \
+\$(NEWLINE) $(TAB) $(LD_FLAGS_USR) 
 
-LDLIBS := \
-\$(NEWLINE) $(TAB) $(LDLIB_MATH) $(LDLIB_LAPACK) $(LDLIB_YAML)
+# Additional libraries -l
+LD_LIBS := \
+\$(NEWLINE) $(TAB) $(LD_LIB_MATH) $(LD_LIB_LAPACK) $(LD_LIB_YAML)

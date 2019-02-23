@@ -71,8 +71,8 @@ class PoissonFiniteElement
 
     // *****************************************************************************************************************
     // Output methods
-    /// Write a summary to the console
-    void summary() const;
+    /// Write a summary of problem setup to the console
+    void print_problem() const;
 
     // *****************************************************************************************************************
     // Data elements

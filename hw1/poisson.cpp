@@ -31,7 +31,7 @@ int main()
     // Need a try / catch block because bad input throws a runtime error
     PoissonFiniteElement prob{PoissonFiniteElement(fname)};
 
-    // Print summary to screen
-    prob.summary();
+    // Print summary of problem setup to screen
+    prob.print_problem();
     return 0;
 }

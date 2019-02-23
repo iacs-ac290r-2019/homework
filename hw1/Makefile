@@ -10,11 +10,11 @@ include Makefile.dep
 # *************************************************************************************************
 # Source, object and executable files
 # *************************************************************************************************
-# List of source files; filename.cpp.  Includes both executables and intermediates.
-SRC := PoissonFiniteElement.cpp GaussQuad.cpp poisson.cpp
+# List of C++ source files; filename.cpp.  Includes both executables and intermediates.
+SRC_CPP := PoissonFiniteElement.cpp GaussQuad.cpp poisson.cpp
 
 # Lists of object files; filename.o
-OBJ := $(patsubst %.cpp, %.o, $(SRC))
+OBJ := $(patsubst %.cpp, %.o, $(SRC_CPP))
 
 # Lists of executables (prefix only)
 EXEC := poisson
@@ -44,8 +44,8 @@ clean:
 # *************************************************************************************************
 # Build object files from source (including executables)
 %.o: %.cpp
-	$(CXX) $(CXX_OUT_OBJ) $(CFLAGS) $(CINCLUDE) \$(NEWLINE)
+	$(CXX) $(CXX_OUT_OBJ) $(CXX_FLAGS) $(INCLUDE) \$(NEWLINE)
 
 # Link executables from object files
 $(EXEC): $(OBJ)
-	$(CXX) $(CXX_OUT_EXE) $(CFLAGS) $(LDFLAGS) $(LDLIBS) \$(NEWLINE)
+	$(CXX) $(CXX_OUT_EXE) $(CXX_FLAGS) $(LD_FLAGS) $(LD_LIBS) \$(NEWLINE)

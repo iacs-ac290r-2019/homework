@@ -45,8 +45,8 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
 }
 
 // *********************************************************************************************************************
-// Constructor
-void PoissonFiniteElement::summary() const
+// Summary of problem setup
+void PoissonFiniteElement::print_problem() const
 {
     // Summarize this problem instance
     cout << format("Loaded 1D Poisson Problem from configuration file %1%.\n") % fname;
