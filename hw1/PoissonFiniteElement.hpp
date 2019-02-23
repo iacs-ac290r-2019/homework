@@ -1,7 +1,12 @@
 /**
- *  @file PoissonProblem.hpp
- *  @brief Class defining one instance of the 1D Poisson problem, i.e. boundary values, f(x), and
- *  the number of grid points.
+ *  @file PoissonFiniteElement.hpp
+ *  @brief Solve the 1D Poisson Problem using the Finite Element Method.
+ * 
+ *  Poisson Problem is 
+ *  (1) u_xx + f(x) = 0
+ *  (2) -u_x(0) = h
+ *  (3) u(1) = g
+ *  Follows the treatment of "The Finite Element Method", Thomas Hughes, chapter 1.
  * 
  *  @author Michael S. Emanuel
  *  @date 2019-02-20
@@ -36,23 +41,24 @@
 
 // *********************************************************************************************************************
 /**
- * @class PoissonProblem
- *  @brief Class to define and solve one instance of the 1D Poisson problem.
+ * @class PoissonFiniteElement
+ * @brief Class to define and solve one instance of the 1D Poisson problem.
  */
-class PoissonProblem
+class PoissonFiniteElement
 {
-public:
+    public:
+    // *****************************************************************************************************************
+    // Constructor & destructor
     /** Default constructor: create an empty problem instance     */
-    PoissonProblem();
+    PoissonFiniteElement();
 
     /** Constructor: load from a YAML file
      * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
      */
-    PoissonProblem(string fname);
+    PoissonFiniteElement(string fname);
 
-    /// Write a summary to the console
-    void summary();
-
+    // *****************************************************************************************************************
+    // Calculations
     /** Create the element stiffness matrix, K_element, of size kxk
      * 
      * @param[in] i the element row number, e.g. 1 or 2
@@ -63,7 +69,14 @@ public:
      */
     void K_element(int i, int j, double *Ke);
 
-private:
+    // *****************************************************************************************************************
+    // Output methods
+    /// Write a summary to the console
+    void summary();
+
+    // *****************************************************************************************************************
+    // Data elements
+    private:
     /// Vector of sampled values of f(x) at the node points
     vector<double> f;
 

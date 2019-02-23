@@ -11,7 +11,7 @@ include Makefile.dep
 # Source, object and executable files
 # *************************************************************************************************
 # List of source files; filename.cpp.  Includes both executables and intermediates.
-SRC := PoissonProblem.cpp GaussQuad.cpp poisson.cpp
+SRC := PoissonFiniteElement.cpp GaussQuad.cpp poisson.cpp
 
 # Lists of object files; filename.o
 OBJ := $(patsubst %.cpp, %.o, $(SRC))
@@ -49,4 +49,3 @@ clean:
 # Link executables from object files
 $(EXEC): $(OBJ)
 	$(CXX) $(CXX_OUT_EXE) $(CFLAGS) $(LDFLAGS) $(LDLIBS) \$(NEWLINE)
-

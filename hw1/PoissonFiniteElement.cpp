@@ -1,23 +1,23 @@
 /**
- *  @file PoissonProblem.cpp
- *  @brief Implementation of PoissonProblem class.
+ *  @file PoissonFiniteElement.cpp
+ *  @brief Implementation of PoissonFiniteElement class.
  * 
  *  @author Michael S. Emanuel
  *  @date 2019-02-20
  */
 
 // *********************************************************************************************************************
-#include "PoissonProblem.hpp"
+#include "PoissonFiniteElement.hpp"
 
 // *********************************************************************************************************************
 // Default Constructor
-PoissonProblem::PoissonProblem() :
+PoissonFiniteElement::PoissonFiniteElement() :
     f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname("")
 {}
 
 // *********************************************************************************************************************
 // Constructor - build from an input file
-PoissonProblem::PoissonProblem(string fname) :
+PoissonFiniteElement::PoissonFiniteElement(string fname) :
     f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname(fname)
 {
     // https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
@@ -43,7 +43,7 @@ PoissonProblem::PoissonProblem(string fname) :
 
 // *********************************************************************************************************************
 // Constructor
-void PoissonProblem::summary()
+void PoissonFiniteElement::summary()
 {
     // Summarize this problem instance
     cout << format("Loaded 1D Poisson Problem from configuration file %1%.\n") % fname;
@@ -62,7 +62,7 @@ void PoissonProblem::summary()
 
 // *********************************************************************************************************************
 // Build the element stiffness matrix, of size kxk
-void PoissonProblem::K_element(int i, int j, double *Ke)
+void PoissonFiniteElement::K_element(int i, int j, double *Ke)
 {
     ;
 }

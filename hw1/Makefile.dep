@@ -1,6 +1,6 @@
 # Classes
-PoissonProblem.o: PoissonProblem.hpp PoissonProblem.cpp
+PoissonFiniteElement.o: PoissonFiniteElement.hpp PoissonFiniteElement.cpp
 GaussQuad.o: GaussQuad.hpp GaussQuad.cpp
 
 # Executables
-poisson.x: poisson.o PoissonProblem.o GaussQuad.o
+poisson.x: poisson.o PoissonFiniteElement.o GaussQuad.o

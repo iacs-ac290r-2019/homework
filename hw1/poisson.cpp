@@ -16,7 +16,7 @@
     using boost::format;
 
 // Local dependencies
-#include "PoissonProblem.hpp"
+#include "PoissonFiniteElement.hpp"
 
 // *********************************************************************************************************************
 int main()
@@ -29,10 +29,10 @@ int main()
 
     // Set up the problem instance from the configuration file
     // Need a try / catch block because bad input throws a runtime error
-    PoissonProblem prob;
+    PoissonFiniteElement prob;
     try
     {
-        prob = PoissonProblem(fname);
+        prob = PoissonFiniteElement(fname);
     }
     catch (std::runtime_error e) 
     {

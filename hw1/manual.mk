@@ -1,9 +1,9 @@
 # Load dependencies
 include Makefile.dep
 
-# Compile PoissonProblem class
-PoissonProblem.o : PoissonProblem.hpp PoissonProblem.cpp
-	g++ -c PoissonProblem.cpp -o PoissonProblem.o \
+# Compile PoissonFiniteElement class
+PoissonFiniteElement.o : PoissonFiniteElement.hpp PoissonFiniteElement.cpp
+	g++ -c PoissonFiniteElement.cpp -o PoissonFiniteElement.o \
 		-Wall -ansi -std=c++17 -O3 -I/d/SoftwareLibraries/yaml-cpp/include 
 
 # Compile poisson program
@@ -12,8 +12,8 @@ poisson.o : poisson.cpp
 		-Wall -ansi -std=c++17 -O3 -I/d/SoftwareLibraries/yaml-cpp/include 
 
 # Link poisson program
-poisson.x : poisson.o PoissonProblem.o
-	g++ -o poisson.x poisson.o PoissonProblem.o \
+poisson.x : poisson.o PoissonFiniteElement.o
+	g++ -o poisson.x poisson.o PoissonFiniteElement.o \
 		-L /d/SoftwareLibraries/lib -lyaml-cpp
 
 # Targets
@@ -25,6 +25,6 @@ poisson: poisson.x
 
 # A Makefile target to remove all the built files
 clean:
-	rm -f PoissonProblem.o poisson.o poisson.x
+	rm -f PoissonFiniteElement.o poisson.o poisson.x
 
 .PHONY: clean depend
