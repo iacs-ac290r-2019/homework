@@ -1,0 +1,29 @@
+\begin{solution}
+    Equation \eqref{eq:adv-diff-rxn} denotes the strong form $\textbf{S}$. Multiplying $\textbf{S}$ by a test function, $w(x)$, and integrating over the domain yields the following.
+    \begin{gather}
+        \int_0^1 w\left(a\partial_{x}u -\lambda u - k\partial_{x}^{2}u\right) dx = \int_0^1 wf dx \\
+        \int_0^1 wa\partial_{x}u dx -\int_0^1 w\lambda u dx - \int_0^1 wk\partial_{x}^{2}u dx = \int_0^1 wf dx
+    \end{gather}
+    Use integration by parts on the third term on the LHS, we have
+    \begin{equation}
+        \int_0^1 wk\partial_{x}^{2}u dx = k \left( w \partial_{x}u \Big|_0^1 - \int_0^1 \partial_{x}w \partial_{x}u dx \right)
+    \end{equation}
+    Set $w(0) = 0$, and we know that $k\partial_{x}u(1) = -b_1$, substitute Eq.(102) into Eq.(101), we have
+    \begin{gather}
+        \int_0^1 wa\partial_{x}u dx -\int_0^1 w\lambda u dx - w(1)k\partial_{x}u(1) + w(0)k\partial_{x}u(0) + \int_0^1 k\partial_{x}w \partial_{x}u dx = \int_0^1 wf dx \notag \\
+        \int_0^1 wa\partial_{x}u dx -\int_0^1 w\lambda u dx - w(1)b_1 + \int_0^1 k\partial_{x}w \partial_{x}u dx = \int_0^1 wf dx
+    \end{gather}
+    
+    Function spaces: $S = \left \{ u \Big| u \in H^1, u(0) = u_0 \right \}$ and $V = \left \{ v \Big| v \in H^1, v(0) = 0 \right \}$.
+
+	\begin{tcolorbox}
+	The weak form: Find $u \in S$, s.t. $\forall w \in V$, $u \in V$, 
+	\begin{equation*}
+	a\int_0^1 w\partial_{x}u dx - \lambda \int_0^1 w u dx + k \int_0^1 \partial_{x}w \partial_{x}u dx = \int_0^1 wf dx + w(1)b_1
+	\end{equation*}
+	
+	\end{tcolorbox}    
+    
+   
+
+\end{solution}

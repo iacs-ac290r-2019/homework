@@ -1,0 +1,94 @@
+% Problem 2.4 Solution
+Following the procedure outlined in the problem statement, we will start by substituting equation \eqref{eq:var_param} into equation \eqref{eq:betan}.
+\begin{equation}
+    \beta_n' = v_1 w_1' + v_1' w_1 + v_2 w_2' + v_2' w_2
+\end{equation}
+If we assume that $w_1 v_1' + w_2 v_2' = 0$, the previous equation simplifies as follows.
+\begin{equation}
+    \beta_n' = v_1 w_1' + v_2 w_2'
+    \label{eq:betan-prime}
+\end{equation}
+From here, we can differentiate equation \eqref{eq:betan-prime} to obtain
+\begin{equation}
+    \beta_n'' = v_1' w_1' + v_1 w_1'' + v_2' w_2' + v_2 w_2''.
+\end{equation}
+Putting all of this together yields the following.
+\begin{equation}
+    v_1' w_1' + v_1 w_1'' + v_2' w_2' + v_2 w_2'' - \gamma_n^2(v_1 w_1 + v_2 w_2) = q_n
+    \label{eq:beta-var-param_expanded}
+\end{equation}
+Now, recall that we have defined $w_1 = \sinh(\gamma_n z)$ and $w_2 = \cosh(\gamma_n z)$. Therefore, $w_1'' = \gamma_n^2 w_1$ and $w_2'' = \gamma_n^2 w_2$, and equation \eqref{eq:beta-var-param_expanded} can be rewritten as follows.
+\begin{equation}
+    v_1' w_1' + v_2' w_2' + \gamma_n^2(v_1 w_1 + v_2 w_2) - \gamma_n^2(v_1 w_1 + v_2 w_2) = q_n
+\end{equation}
+Notice that several of the terms cancel, leaving us with
+\begin{equation}
+    v_1' w_1' + v_2' w_2' = q_n.
+\end{equation}
+We now have two equations for $v_1'$ and $v_2'$.
+\begin{align}
+    w_1 v_1' + w_2 v_2' &= 0\\
+    v_1' w_1' + v_2' w_2' &= q_n
+\end{align}
+These can be written explicitly in terms of $\sinh(\gamma_n z)$ and $\cosh(\gamma_n z)$.
+\begin{align}
+    \sinh(\gamma_n z) v_1' + \cosh(\gamma_n z) v_2' &= 0\\
+    \gamma_n \cosh(\gamma_n z) v_1' + \gamma_n \sinh(\gamma_n z) v_2' &= 0 \label{eq:odev1v2}
+\end{align}
+To proceed, we will use the first equation to isolate $v_2'$.
+\begin{equation}
+    v_2' = -\frac{\sinh(\gamma_n z)}{\cosh(\gamma_n z)}v_1'
+    \label{eq:v2prime}
+\end{equation}
+From here, we can substitute equation \eqref{eq:v2prime} into equation \eqref{eq:odev1v2} to obtain an expression for $v_1'$.
+\begin{align}
+    \gamma_n \cosh(\gamma_n z) v_1' + \gamma_n \sinh(\gamma_n z) \left[-\frac{\sinh(\gamma_n z)}{\cosh(\gamma_n z)} v_1'\right] &= q_n\\
+    \gamma_n v_1' \left[\cosh(\gamma_n z) - \frac{\sinh^2(\gamma_n z)}{\cosh(\gamma_n z)}\right] &= q_n\\
+    \frac{\gamma_n v_1'}{\cosh(\gamma_n z)} &= q_n\\
+    v_1' &= \frac{q_n}{\gamma_n}\cosh(\gamma_n z) \label{eq:v1prime}
+\end{align}
+Integrating equation \eqref{eq:v1prime} yields
+\begin{equation}
+    \boxed{v_1 = \frac{q_n}{\gamma_n^2} \sinh(\gamma_n z) + \alpha_1,}
+\end{equation}
+where $\alpha_1$ is a constant of integration. Likewise, we can now use equation \eqref{eq:v1prime} to obtain a solution for $v_2$.
+\begin{align}
+    v_2' &= -\frac{\sinh(\gamma_n z)}{\cosh(\gamma_n z)}\left[\frac{q_n}{\gamma_n}\cosh(\gamma_n z)\right]\nonumber\\
+    &= -\frac{q_n}{\gamma_n} \sinh(\gamma_n z) \label{eq:v2prime-explicit}
+\end{align}
+Integrating equation \eqref{eq:v2prime-explicit} yields
+\begin{equation}
+    \boxed{v_2 = -\frac{q_n}{\gamma_n^2} \cosh(\gamma_n z) + \alpha_2,}
+\end{equation}
+where $\alpha_2$ is a second constant of integration. Putting all of this together allows us to write a general solution for $\beta_n(z)$.
+\begin{align}
+    \beta_n(z) &= v_1 w_1 + v_2 w_2\nonumber\\
+    &= \left[\frac{q_n}{\gamma_n^2}\sinh(\gamma_n z) + \alpha_1\right]\sinh(\gamma_n z) + \left[\alpha_2 - \frac{q_n}{\gamma_n^2}\cosh(\gamma_n z)\right]\cosh(\gamma_n z) \label{eq:beta-gen-sol}
+\end{align}
+We can now impose the boundary conditions to determine the constants of integration, $\alpha_1$ and $\alpha_2$.
+\begin{equation}
+    \beta_n(z=0) = 0 = -\frac{q_n}{\gamma_n^2} + \alpha_2
+    \implies 
+    \alpha_2 = \frac{q_n}{\gamma_n^2}
+\end{equation}
+Obtaining an expression for $\alpha_1$ involves more algebra, but the idea is the same.
+\begin{align}
+    \beta_n(z=b) = 0 &= \left[\frac{q_n}{\gamma_n^2}\sinh(\gamma_n b) + \alpha_1\right]\sinh(\gamma_n b) + \left[\frac{q_n}{\gamma_n^2} - \frac{q_n}{\gamma_n^2}\cosh(\gamma_n b)\right]\cosh(\gamma_n b)\\
+    \alpha_1 &= \frac{q_n}{\gamma_n^2 \sinh(\gamma_n b)}\left[\cosh^2(\gamma_n b) - \sinh^2(\gamma_n b) - \cosh(\gamma_n b)\right]\\
+    \alpha_1 &= \frac{q_n}{\gamma_n^2 \sinh(\gamma_n b)}\left[1 - \cosh(\gamma_n b)\right]
+\end{align}
+Putting all of this together allows us to rewrite \eqref{eq:beta-gen-sol} as follows.
+\begin{align}
+    \beta_n(z) &= \frac{q_n}{\gamma_n^2}\left[\sinh(\gamma_n z) + \frac{1 - \cosh(\gamma_n b)}{\sinh(\gamma_n b)}\right]\sinh(\gamma_n z) + \frac{q_n}{\gamma_n^2}\left[1 - \cosh(\gamma_n z)\right]\cosh(\gamma_n z)\nonumber\\
+    &= \frac{q_n}{\gamma_n^2} \left[\sinh^2(\gamma_n z) + \frac{\sinh(\gamma_n z) - \cosh(\gamma_n b)\sinh(\gamma_n z)}{\sinh(\gamma_n b)} + \cosh(\gamma_n z) - \cosh^2(\gamma_n z)\right]\nonumber\\
+    &= \frac{q_n}{\gamma_n^2 \sinh(\gamma_n b)}\left[\sinh(\gamma_n z) - \sinh(\gamma_n b) - \cosh(\gamma_n b)\sinh(\gamma_n z) + \cosh(\gamma_n z)\sinh(\gamma_n b)\right]\nonumber\\
+    &= \frac{q_n}{\gamma_n^2 \sinh(\gamma_n b)}\left[\sinh(\gamma_n z) - \sinh(\gamma_n b) -\sinh(\gamma_n(z-b))\right] \label{eq:beta-cn-2}
+\end{align}
+Notice that if we let 
+\begin{equation}
+    C_n = \frac{q_n}{\gamma_n^2 \sinh(\gamma_n b)},
+\end{equation}
+equations \eqref{eq:beta-cn} and \eqref{eq:beta-cn-2} agree. Thus, we may write the end result as 
+\begin{equation}
+    \boxed{\beta_n(z) = 2C_n \sinh\left(\frac{\gamma_n}{2}(z-b)\right)\left[\cosh\left(\frac{\gamma_n}{2}(z+b)\right) - \cosh\left(\frac{\gamma_n}{2}(z-b)\right)\right].}
+\end{equation}

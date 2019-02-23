@@ -1,0 +1,23 @@
+% Problem 2.5 Solution
+Recall that our analysis has assumed a product solution of the form 
+\begin{equation}
+    u(y,z) = \sum_{n=0}^{\infty} \beta_n(z) \sin\left(\frac{n \pi y}{a}\right). 
+    \label{eq:u-ansatz}
+\end{equation}
+Substituting our solution for $\beta_n(z)$ into equation \eqref{eq:u-ansatz} yields the end result.
+\begin{equation}
+    \boxed{u(y,z) = \sum_{n=0}^{\infty} 2C_n \sinh\left(\frac{\gamma_n}{2}(z-b)\right)\left[\cosh\left(\frac{\gamma_n}{2}(z+b)\right) - \cosh\left(\frac{\gamma_n}{2}(z-b)\right)\right] \sin(\gamma_n y)}
+\end{equation}
+From here, we can obtain other relevant quantities, such as the vorticity and streamlines. Remember that the vorticity is the curl of the velocity field.
+\begin{align}
+    \vec{\omega} &= \vec{\nabla}\times\vec{u}\\
+    &= \left(\frac{\partial}{\partial x}\hat{x} + \frac{\partial}{\partial y}\hat{y} + \frac{\partial}{\partial z}\hat{z}\right) \times u(y,z)\hat{x}\\
+    &= \frac{\partial u}{\partial x} (\hat{x}\times\hat{x}) + \frac{\partial u}{\partial y} (\hat{y}\times\hat{x}) + \frac{\partial u}{\partial z} (\hat{z}\times\hat{x})\\
+    &= \frac{\partial u}{\partial z}\hat{y} - \frac{\partial u}{\partial y}\hat{z}\\
+    &= \beta_n'(z) \sin(\gamma_n y)\ \hat{y} - \gamma_n \beta_n(z) \cos(\gamma_n y)\ \hat{z}
+\end{align}
+Substituting in the explicit form of $\beta_n(z)$ and $\beta_n'(z)$ and simplifying our expression gives the following result.
+\begin{align}
+    \vec{\omega} = &\gamma_n C_n \left[\cosh(\gamma_n z) - \cosh(\gamma_n(z-b))\right]\sin(\gamma_n y)\ \hat{y} \dots\nonumber\\
+    &- 2 \gamma_n C_n \sinh\left(\frac{\gamma_n}{2}(z-b)\right)\left[\cosh\left(\frac{\gamma_n}{2}(z+b)\right) - \cosh\left(\frac{\gamma_n}{2}(z-b)\right)\right] \cos(\gamma_n y)\ \hat{z}
+\end{align}

@@ -1,0 +1,16 @@
+% Problem 2.1 Solution
+As before, let us start with the Navier-Stokes equations for an incompressible fluid.
+\begin{align}
+    \frac{\partial \vec{u}}{\partial t} + (\vec{u}\cdot\vec{\nabla})\vec{u} &= -\frac{1}{\rho}\vec{\nabla}p + \frac{\mu}{\rho}\nabla^2\vec{u}\\
+    \vec{\nabla}\cdot\vec{u} &= 0
+\end{align}
+Note that we have already neglected the effect of any external body forces since the problem statement makes no mention of their importance. We already know from working through the problem on Couette flow that under steady flow conditions, $\partial \vec{u}/\partial t = 0$. Furthermore, since we are dealing with a one-component flow that is independent of $x$ (i.e. $u = u(y,z)$), then the nonlinear component vanishes.
+\begin{equation}
+    \vec{u}(\vec{\nabla}\cdot\vec{u}) = 0
+\end{equation}
+Thus, obeying the assumptions given in the problem statement essentially means our velocity profile must be of the form $\vec{u} = u(y,z)\ \hat{x}$, and the Navier-Stokes momentum equation simplifies as follows. 
+\begin{equation}
+    \boxed{\left(\frac{\partial^2}{\partial y^2} + \frac{\partial^2}{\partial z^2}\right)u(y,z) = \frac{1}{\mu}\frac{\partial p}{\partial x}}
+    \label{snsmr}
+\end{equation}
+For this problem, no-slip boundary conditions imply that $u(y=0,z) = u(y=a,z) = 0$ and $u(y,z=0) = u(y,z=b) = 0$. 

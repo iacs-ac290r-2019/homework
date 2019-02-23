@@ -1,0 +1,33 @@
+% Problem 2.2 Solution
+To proceed, we assume a solution of the form
+\begin{equation}
+    u(y,z) = \sum_{n=1}^{\infty} \beta_n(z) \sin\left(\frac{n \pi y}{a}\right).
+\end{equation}
+Substituting this into equation (\ref{snsmr}) yields the following.
+\begin{equation}
+    -\sum_{n=1}^{\infty} \beta_n(z) \left(\frac{n \pi}{a}\right)^2 \sin\left(\frac{n \pi y}{a}\right) + \sum_{n=1}^{\infty} \beta_n''(z) \sin\left(\frac{n \pi y}{a}\right) = \frac{1}{\mu}\frac{\partial p}{\partial x}
+\end{equation}
+We now exploit the orthogonality of the basis functions by multiplying through by $\sin(\gamma_m y)$ and integrating over $y$. We will examine each of the three terms individually to make the bookkeeping go smoothly.
+\begin{align}
+    \int_{0}^{a} \sum_{n=1}^{\infty} \beta_n''(z) \sin\left(\frac{n \pi y}{a}\right) \sin\left(\frac{m \pi y}{a}\right)\ dy &= \beta_m''(z) \frac{a}{2}\\
+    \int_{0}^{a} \sum_{n=1}^{\infty} \beta_n(z) \left(\frac{n \pi}{a}\right)^2 \sin\left(\frac{n \pi y}{a}\right) \sin\left(\frac{m \pi y}{a}\right)\ dy &= \beta_m(z) \left(\frac{m \pi}{a}\right)^2 \frac{a}{2}\\
+    \int_{0}^{a} \frac{1}{\mu}\frac{\partial p}{\partial x} \sin\left(\frac{m \pi y}{a}\right)\ dy &= \int_{0}^{a} Q \sin\left(\frac{m \pi y}{a}\right)\ dy
+\end{align}
+Putting everything together allows to obtain an ordinary differential equation for the coefficients, $\beta_m(z)$.
+\begin{equation}
+    \beta_m''(z) - \beta_m(z) \left(\frac{m \pi}{a}\right)^2 = \frac{2}{a}\int_{0}^{a} Q \sin\left(\frac{m \pi y}{a}\right)
+\end{equation}
+Recall that $\gamma_m = m\pi/a$, and if we define
+\begin{equation}
+    q_m = \frac{2}{a}\int_{0}^{a} Q \sin\left(\frac{m \pi y}{a}\right),
+\end{equation}
+we may rewrite the previous ODE as
+\begin{equation}
+    \beta_m'' - \gamma_m^2 \beta_m = q_m.
+\end{equation}
+At this point, we can exchange the index $m$ for $n$ such that our end result can be written as follows.
+\begin{equation}
+    \boxed{\beta_n'' - \gamma_n^2 \beta_n = q_n}
+    \label{odebeta}
+\end{equation}
+Recall that we are working with no-slip boundary conditions on all sides. Thus, the boundary conditions on $\beta_n$ must be $\beta_n(z=0) = \beta_n(z=b) = 0$.
