@@ -48,14 +48,14 @@ class PoissonFiniteElement
 {
     public:
     // *****************************************************************************************************************
-    // Constructor & destructor
-    /** Default constructor: create an empty problem instance     */
-    // PoissonFiniteElement();
-
+    // Constructor & Destructor
     /** Constructor: load from a YAML file
      * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
      */
     PoissonFiniteElement(string fname = "");
+
+    /// Destructor; needs to delete all manually created arrays of doubles used with LAPACK
+    ~PoissonFiniteElement();
 
     // *****************************************************************************************************************
     // Calculations
@@ -77,6 +77,9 @@ class PoissonFiniteElement
     // *****************************************************************************************************************
     // Data elements
     private:
+    /// The name of the configuration file used to set up the problem
+    string fname;
+
     /// Vector of sampled values of f(x) at the node points
     vector<double> f;
 
@@ -95,7 +98,7 @@ class PoissonFiniteElement
     /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
     int q;
 
-    /// The name of the configuration file
-    string fname;
-
+    /** The grid of node locations; will be uniformly spaced, store a vector 
+     * for extensibility to non-uniform mesh size in the future. */
+    vector<double> x;
 };

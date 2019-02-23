@@ -12,7 +12,10 @@
 // *********************************************************************************************************************
 // Constructor - build from an input file
 PoissonFiniteElement::PoissonFiniteElement(string fname) :
-    f(vector<double>()), g(0.0), h(0.0), n(0), k(0), q(0), fname(fname)
+    fname(fname), 
+    f(vector<double>()), 
+    g(0.0), h(0.0), n(0), k(0), q(0),
+    x(vector<double>())
 {
     // https://stackoverflow.com/questions/45346605/example-for-yaml-cpp-0-5-3-in-linux
     try
@@ -41,7 +44,21 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
         cout << e.what();
     }
     catch (...)
-    {}
+    {
+        cout << "Unknown exception encountered in PoissonFiniteElement constructor; returning empty problem.";
+    }
+    // Populate the vector x of node points using a uniform mesh size
+    x.resize(n+1);
+    for (int i=0; i<=n; ++i)
+    {
+        x[i] = double(i) / n;
+    }
+}
+
+
+PoissonFiniteElement::~PoissonFiniteElement()
+{
+    // TODO: delete double arrays!
 }
 
 // *********************************************************************************************************************
@@ -55,12 +72,23 @@ void PoissonFiniteElement::print_problem() const
     cout << format("n=%i\n") % n;
     cout << format("k=%i\n") % k;
     cout << format("q=%i\n") % q;
+
+    // Print the f vector
     cout << format("f vector of %i elements:\n") % f.size();
-    for (double x : f)
+    for (double f_e : f)
     {
-        cout << format("%4.2f,  ") % x;
+        cout << format("%4.2f,  ") % f_e;
     }
     cout << "\n";
+
+    // Print the x vector
+    cout << format("x vector of %i nodes:\n") % x.size();
+    for (double x_i : x)
+    {
+        cout << format("%4.2f,  ") % x_i;
+    }
+    cout << "\n";
+
 }
 
 // *********************************************************************************************************************
