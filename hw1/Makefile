@@ -11,7 +11,7 @@ include Makefile.dep
 # Source, object and executable files
 # *************************************************************************************************
 # List of C++ source files; filename.cpp.  Includes both executables and intermediates.
-SRC_CPP := PoissonFiniteElement.cpp LinearSolve.cpp PoissonExamples.cpp GaussQuad.cpp poisson.cpp
+SRC_CPP = $(wildcard *.cpp)
 
 # Lists of object files; filename.o
 OBJ := $(patsubst %.cpp, %.o, $(SRC_CPP))
