@@ -50,12 +50,12 @@ class PoissonFiniteElement
     // *****************************************************************************************************************
     // Constructor & destructor
     /** Default constructor: create an empty problem instance     */
-    PoissonFiniteElement();
+    // PoissonFiniteElement();
 
     /** Constructor: load from a YAML file
      * @param[in] fname the name of the YAML configuration file, e.g. my_problem.yml
      */
-    PoissonFiniteElement(string fname);
+    PoissonFiniteElement(string fname = "");
 
     // *****************************************************************************************************************
     // Calculations
@@ -72,7 +72,7 @@ class PoissonFiniteElement
     // *****************************************************************************************************************
     // Output methods
     /// Write a summary to the console
-    void summary();
+    void summary() const;
 
     // *****************************************************************************************************************
     // Data elements

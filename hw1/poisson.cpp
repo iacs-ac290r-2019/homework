@@ -29,16 +29,8 @@ int main()
 
     // Set up the problem instance from the configuration file
     // Need a try / catch block because bad input throws a runtime error
-    PoissonFiniteElement prob;
-    try
-    {
-        prob = PoissonFiniteElement(fname);
-    }
-    catch (std::runtime_error e) 
-    {
-        cout << e.what();
-        return 1;
-    }
+    PoissonFiniteElement prob{PoissonFiniteElement(fname)};
+
     // Print summary to screen
     prob.summary();
     return 0;
