@@ -20,6 +20,7 @@
 
 // Local dependencies
 #include "PoissonFiniteElement.hpp"
+#include "PoissonExamples.hpp"
 
 // *********************************************************************************************************************
 /** Run a test case for the 1D Poisson problem
@@ -27,7 +28,7 @@
  *  @param[in] U_func function with the known solution
  *  @return isOK true for pass, false for fail
  */ 
-bool test(string fname, double (*U_func) (double), bool verbose = false)
+bool test(string fname, double (*U_func) (double), bool verbose = false, bool show_ans = true)
 {
     // Status update
     cout << format("\nLoading configuration file %1%:\n") % fname;    
@@ -64,7 +65,7 @@ bool test(string fname, double (*U_func) (double), bool verbose = false)
 
     // Display the solution u(x)
     cout << format("\nAssembled %1% x 1 solution vector U:") % pfe.num_elements();
-    pfe.print_U();
+    if (show_ans) { pfe.print_U();}
 
     // Compare this to known solution
     int n = pfe.num_elements();
@@ -98,44 +99,28 @@ bool test(string fname, double (*U_func) (double), bool verbose = false)
     return isOK;
 }
 
-
-// *********************************************************************************************************************
-// Test case 1 with f=0, g=0, h=1; solution is u(x) = 1-x
-double U_func_1(double x)
-{
-    return 1.0 - x;
-}
-
-// *********************************************************************************************************************
-// Test case 2 with f=0, g=1, h=1; solution is u(x) = 2-x
-double U_func_2(double x)
-{
-    return (2.0 - x);
-}
-
-// *********************************************************************************************************************
-// Test case 3 with f=1, g=1, h=1; solution is u(x) = 2-x + 1/2(1-x^2)
-double U_func_3(double x)
-{
-    return 2.0 - x + 0.5 * (1 - x * x);
-}
-
 // *********************************************************************************************************************
 void run_tests()
 {
     // Test case 1 with f=0, g=0, h=1; solution is u(x) = 1-x
-    test("example_1.yml", &U_func_1);
+    test("example_1.yml", &U_func_1, false, true);
 
     // Test case 2 with f=0, g=1, h=1; solution is u(x) = 2-x
-    test("example_2.yml", &U_func_2);
+    test("example_2.yml", &U_func_2, false, true);
 
     // Test case 3 with f=1, g=1, h=1; solution is u(x) = 2-x + 1/2(1-x^2)
-    test("example_3.yml", &U_func_3);
+    test("example_3.yml", &U_func_3, false, true);
+
+    // Test case 4 with u(x) = sin(x) and 100 elements
+    test("example_4.yml", &U_func_4, false, false);
 }
 
 // *********************************************************************************************************************
 int main()
 {
+    // Load the function table (supports loading configuration files and running tests)
+    makeFuncTable();
+
     // Run test suite
     run_tests();
 

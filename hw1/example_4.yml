@@ -8,18 +8,19 @@
 # -u_x(0) = h
 
 # *****************************************************************************
-#  Test case 1 with f=0, g=0, h=1; solution is u(x) = 1-x
+# Test case 4; solution is u(x) = sin(x) -->
+# u''(x) = -sin(x), h=-u'(0)=-1, g=u(1)=sin(1)=0.841470984808
 
 # *****************************************************************************
 # Set the boundary conditions
-# u(1) = g
-g: 0.0
+# u(1) = g; 
+g: 0.841470984808
 # u'(0) = h
-h: 1.0
+h: -1.0
 
 # *****************************************************************************
 # Set the Number of grid points, n
-n: 8
+n: 128
 
 # Set the degrees of freedom per element; 2 for piecewise linear elements
 d: 2
@@ -29,11 +30,11 @@ q: 1
 
 # *****************************************************************************
 # Force function name
-forceFuncName: F_func_1
+forceFuncName: F_func_4
 
 # *****************************************************************************
 # Set the force vector; length should match n+1
-f: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+# f: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
 # *****************************************************************************
 # Mechanism to load force; VECTOR or FUNCTION
@@ -41,4 +42,4 @@ forceType: FUNCTION
 
 # *****************************************************************************
 # Solution function name
-solutionFuncName: U_func_1
+solutionFuncName: U_func_4

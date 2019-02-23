@@ -8,6 +8,9 @@
 # -u_x(0) = h
 
 # *****************************************************************************
+#  Test case 2 with f=0, g=1, h=1; solution is u(x) = 2-x
+
+# *****************************************************************************
 # Set the boundary conditions
 # u(1) = g
 g: 1.0
@@ -25,13 +28,17 @@ d: 2
 q: 1
 
 # *****************************************************************************
-# Force function as a string
-force_func: |
-    double force_func(double x)
-    {
-        return 0.0;
-    }
+# Force function name
+forceFuncName: F_func_2
 
 # *****************************************************************************
 # Set the force vector; length should match n+1
 f: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+# *****************************************************************************
+# Mechanism to load force; VECTOR or FUNCTION
+forceType: FUNCTION
+
+# *****************************************************************************
+# Solution function name
+solutionFuncName: U_func_2

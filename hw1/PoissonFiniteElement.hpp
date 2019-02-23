@@ -40,6 +40,7 @@
 
 // Local dependencies
 #include "LinearSolve.hpp"
+#include "PoissonExamples.hpp"
 
 // *********************************************************************************************************************
 /**
@@ -82,6 +83,12 @@ class PoissonFiniteElement
 
     /// Order of Gaussian Quadrature to use, e.g. 1 to use the midpoint
     int q;
+
+    /// The name of the force function
+    string forceFuncName;
+
+    /// The name of the solution function
+    string solutionFuncName;
 
     /** The grid of node locations; will be uniformly spaced, store a vector 
      * for extensibility to non-uniform mesh size in the future. */

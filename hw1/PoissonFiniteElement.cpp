@@ -17,6 +17,8 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
     f(vector<double>()), 
     g(0.0), h(0.0), n(0), d(0), q(0),
     x(vector<double>()),
+    forceFuncName(""),
+    solutionFuncName(""),
     K(nullptr),
     F(nullptr),
     U(nullptr)
@@ -27,20 +29,51 @@ PoissonFiniteElement::PoissonFiniteElement(string fname) :
         YAML::Node config = YAML::LoadFile(fname);
 
         // Set the members to the configured values
-        f = config["f"].as<vector<double>>();
         g = config["g"].as<double>();
         h = config["h"].as<double>();
         n = config["n"].as<int>();
         d = config["d"].as<int>();
         q = config["q"].as<int>();
 
+        // Load the force vector by the specified method
+        string forceType = config["forceType"].as<string>();
+        if (forceType == "VECTOR")
+        {
+                f = config["f"].as<vector<double>>();
+        }
+        else if (forceType == "FUNCTION")
+        {
+            // Initialize force vector to size n+1 with zeros
+            f = vector<double>(n+1, 0.0);
+            // The name of the force function
+            forceFuncName = config["forceFuncName"].as<string>();
+            // Look up the force function            
+            FuncType forceFunc = FuncByName(forceFuncName);
+            // Apply this force function to to the x in the mesh
+            for (int i=0; i<=n; ++i)
+            {
+                double x = double(i) / n;
+                f[i] = (*forceFunc)(x);
+            }
+        }
+        else
+        {
+            string msg = (format("Error: bad force_type %1%; must be VECTOR or FUNCTION.\n") % forceType).str();
+            throw std::runtime_error(msg);
+        }
+              
         // Check that length of f is equal to n+1
         if (f.size() != n+1)
         {
             string msg = (format("Error: length of f %1% is not equal to n+1 = %2%.\n") % f.size() % (n+1)).str();
             throw std::runtime_error(msg);
         }
+
+        // Get the solution function name
+        solutionFuncName = config["solutionFuncName"].as<string>();
+
     }
+
     // If there was a problem above, e.g. bad file or bad input, will be left an empty PoissonFiniteElement   
     catch (const std::runtime_error &e) 
     {

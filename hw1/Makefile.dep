@@ -1,6 +1,7 @@
 # Classes / Functions
 PoissonFiniteElement.o: PoissonFiniteElement.hpp PoissonFiniteElement.cpp
 LinearSolve.o : LinearSolve.hpp LinearSolve.cpp
+PoissonExamples.o : PoissonExamples.hpp PoissonExamples.cpp
 GaussQuad.o: GaussQuad.hpp GaussQuad.cpp
 
 # Executables
