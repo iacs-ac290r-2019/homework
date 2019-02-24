@@ -110,6 +110,10 @@ class PoissonFiniteElement
     inline int num_elements() const
     {return n;}
 
+    inline string getSolutionFuncName() const {
+        return solutionFuncName;
+    }
+
     /** Access entry (i, j) of the global stiffness matrix K
      *  @param[in] i the row
      *  @param[in] j the column
