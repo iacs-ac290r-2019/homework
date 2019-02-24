@@ -23,21 +23,7 @@
 #include "PoissonFiniteElement.hpp"
 #include "PoissonExamples.hpp"
 
-// *********************************************************************************************************************
-/** Run a test case for the 1D Poisson problem
- *  @param[in] fname the name of the configuration file
- *  @param[in] U_func function with the known solution
- *  @return isOK true for pass, false for fail
- */ 
-bool test(string fname, double (*U_func) (double), bool verbose = false, bool show_ans = true)
-{
-    // Status update
-    cout << format("\nLoading configuration file %1%:\n") % fname;    
-
-    // Set up the problem instance from the configuration file
-    // Need a try / catch block because bad input throws a runtime error
-    PoissonFiniteElement pfe{PoissonFiniteElement(fname)};
-
+bool test(PoissonFiniteElement& pfe, bool verbose = false, bool show_ans = true) {
     // Print summary of problem setup to screen
     if (verbose) {pfe.print_problem();}
 
@@ -71,6 +57,7 @@ bool test(string fname, double (*U_func) (double), bool verbose = false, bool sh
     // Compare this to known solution
     int n = pfe.num_elements();
     double max_err = 0.0;
+    auto U_func = FuncByName(pfe.getSolutionFuncName());
     for (int i=0; i <= n; ++ i)
     {
         // The x value at this point
@@ -101,19 +88,37 @@ bool test(string fname, double (*U_func) (double), bool verbose = false, bool sh
 }
 
 // *********************************************************************************************************************
+/** Run a test case for the 1D Poisson problem
+ *  @param[in] fname the name of the configuration file
+ *  @param[in] U_func function with the known solution
+ *  @return isOK true for pass, false for fail
+ */ 
+bool test(string fname, bool verbose = false, bool show_ans = true)
+{
+    // Status update
+    cout << format("\nLoading configuration file %1%:\n") % fname;
+
+    // Set up the problem instance from the configuration file
+    // Need a try / catch block because bad input throws a runtime error
+    PoissonFiniteElement pfe{PoissonFiniteElement(fname)};
+
+    return test(pfe, verbose, show_ans);
+}
+
+// *********************************************************************************************************************
 void run_tests()
 {
     // Test case 1 with f=0, g=0, h=1; solution is u(x) = 1-x
-    test("example_1.yml", &U_func_1, false, true);
+    test("example_1.yml", false, true);
 
     // Test case 2 with f=0, g=1, h=1; solution is u(x) = 2-x
-    test("example_2.yml", &U_func_2, false, true);
+    test("example_2.yml", false, true);
 
     // Test case 3 with f=1, g=1, h=1; solution is u(x) = 2-x + 1/2(1-x^2)
-    test("example_3.yml", &U_func_3, false, true);
+    test("example_3.yml", false, true);
 
     // Test case 4 with u(x) = sin(x) and 100 elements
-    test("example_4.yml", &U_func_4, false, false);
+    test("example_4.yml", false, false);
 }
 
 // *********************************************************************************************************************
@@ -123,19 +128,11 @@ int main(int argc, char* argv[])
     makeFuncTable();
 
     // Optionally, accept a command-line pair of arguments: first is the YAML file, second is the U_func name
-    if (argc == 3) {
+    if (argc == 2) {
         string fileName = string(argv[1]);
-        string uFuncName = string(argv[2]);
 
-        auto uFunc = FuncByName(uFuncName);
-        if (uFunc == nullptr) {
-            cout << "The first parameter (" << fileName << ") should be the YAML config file" << endl;
-            cout << "The second parameter (" << uFuncName << ") should be the basis comparison function name [see `makeFuncTable`]" << endl;
 
-            return 1;
-        }
-
-        test(fileName, uFunc);
+        test(fileName);
         return 0;
     }
 
