@@ -23,6 +23,12 @@
 #include "PoissonFiniteElement.hpp"
 #include "PoissonExamples.hpp"
 
+// *********************************************************************************************************************
+/** Run a test case for the 1D Poisson problem
+ *  @param[in] Reference to the PoissonFiniteElement. Might be more convenient to call the other overloaded function
+ *  taking the file name.
+ *  @return isOK true for pass, false for fail
+ */
 bool test(PoissonFiniteElement& pfe, bool verbose = false, bool show_ans = true) {
     // Print summary of problem setup to screen
     if (verbose) {pfe.print_problem();}
@@ -90,7 +96,6 @@ bool test(PoissonFiniteElement& pfe, bool verbose = false, bool show_ans = true)
 // *********************************************************************************************************************
 /** Run a test case for the 1D Poisson problem
  *  @param[in] fname the name of the configuration file
- *  @param[in] U_func function with the known solution
  *  @return isOK true for pass, false for fail
  */ 
 bool test(string fname, bool verbose = false, bool show_ans = true)
