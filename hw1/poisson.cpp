@@ -11,6 +11,7 @@
 // Libraries
 #include <iostream>
     using std::cout;
+    using std::endl;
 
 #include <string>
     using std::string;
@@ -116,15 +117,30 @@ void run_tests()
 }
 
 // *********************************************************************************************************************
-int main()
+int main(int argc, char* argv[])
 {
     // Load the function table (supports loading configuration files and running tests)
     makeFuncTable();
 
+    // Optionally, accept a command-line pair of arguments: first is the YAML file, second is the U_func name
+    if (argc == 3) {
+        string fileName = string(argv[1]);
+        string uFuncName = string(argv[2]);
+
+        auto uFunc = FuncByName(uFuncName);
+        if (uFunc == nullptr) {
+            cout << "The first parameter (" << fileName << ") should be the YAML config file" << endl;
+            cout << "The second parameter (" << uFuncName << ") should be the basis comparison function name [see `makeFuncTable`]" << endl;
+
+            return 1;
+        }
+
+        test(fileName, uFunc);
+        return 0;
+    }
+
     // Run test suite
     run_tests();
-
-    // TODO: accept a command line argument and load the file of that name, then solve it
 
     // Normal program exit
     return 0;
