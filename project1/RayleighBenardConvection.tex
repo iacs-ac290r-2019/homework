@@ -223,12 +223,12 @@ different research groups and allow each group to focus on the frontier
 of discovery in their area without reinventing the wheel.
 Some packages in Trilinos relevant to Drekar include:
 \begin{itemize}
-\item{Linear solvers}: \textit{Amesos} (direct) and \textit{Aztec00}, \textit{Belos} (indirect)
-\item{Preconditioners}: \textit{lfpack} (algebraic), \textit{ML} (multilevel), \textit{Meros} (block)
-\item{Eigenvalue solvers}: \textit{Anasazi}
-\item{Nonlinear solvers}: \textit{NOX}
-\item{Time Integrators}: \textit{Rhythmos, Tempus}
-\item{Automatic Differentiation}: \textit{Sacado}
+\item{\textbf{Linear solvers}}: \textit{Amesos} (direct) and \textit{Aztec00}, \textit{Belos} (indirect)
+\item{\textbf{Preconditioners}}: \textit{lfpack} (algebraic), \textit{ML} (multilevel), \textit{Meros} (block)
+\item{\textbf{Eigenvalue solvers}}: \textit{Anasazi}
+\item{\textbf{Nonlinear solvers}}: \textit{NOX}
+\item{\textbf{Time Integrators}}: \textit{Rhythmos, Tempus}
+\item{\textbf{Automatic Differentiation}}: \textit{Sacado}
 \end{itemize}
 Consider for a moment how many of the basic building blocks used by Drekar
 are provided by the packages listed above.
@@ -240,6 +240,88 @@ our first impression of Drekar is that it is a very sophisticated
 and impressive piece of software engineering.
 
 \section{Overview of Numerical Methods Used}
+The main numerical methods used in Drekar are the Finite Element Method (FEM)
+and nonlinear equation solvers.
+The Finite Element Method discretizes a partial differential equation in space.
+The spatial discretization is carried out by dividing the space into a collection of
+subdomains called a \textit{mesh}.  
+For example, on the RBC problem, we divide the $x$ direction into 2048 evenly spaced
+points and the $y$ direction into 1024 points with Chebyshev spacing.
+
+We then try to solve the PDE on a finite dimensional space of functions.
+We replace the infinite dimensional space of functions on the domain with a finite
+dimensional function space by introducing a \textbf{basis} of functions defined on each element.
+The choice of basis is important.  
+Different bases give rise to different methods, and some work better on different problems than others.
+Drekar has the capability to use a number of different bases for the FEM.
+As a concrete example of this technique, on our homework assignment we solved the Poisson
+equation with the FEM by using the basis piecewise linear functions 
+connecting two adjacent nodes.
+
+Once a basis has been chosen, the state of the system at a moment in time
+can be described by assigning weights to each basis vector.  
+This also allows us to describe the evolution of the system over one discrete
+time step by applying the differential equation in this basis.
+If we use an explicit time step as we did on the 1D Poisson problem
+example, we will end up with a linear equation to solve at each time step.
+
+For a more complex system, we will often need to solve a nonlinear equation
+to advance the system from one time step to the next.
+Implicit solvers (including an IMEX solver) will often require the solution of a nonlinear equation.
+To make this a bit more concrete, consider two different ways discretize one
+step of the 1D Poisson equation in time:
+\begin{align}
+\frac{u^{n+1}_{j} - u^{n}_{j}}{k} &= \frac{u^{n}_{j+1} - 2u^{n}_{j} + u^{n}_{j+1} }{h^2} \\
+\frac{u^{n+1}_{j} - u^{n}_{j}}{k} &= \frac{u^{n+1}_{j+1} - 2u^{n+1}_{j} + u^{n+1}_{j+1} }{h^2}
+\end{align}
+
+The superscript $n$ or $n+1$ indicates the time step.  
+The subscript $j$ indicates the spatial grid entry.
+While these two equations look superficially similar, they describe very different algorithms, 
+which would become clear if you tried to program them on a computer.
+The first equation is \textbf{explicit}.  The right hand side is known at time step $n$.
+It allows us to solve for the new value $u^{n+1}_{j}$ explicitly in terms of known quantities at time step $n$.
+This makes it easy to program and intuitive.
+The next equation though is \textbf{implicit}.  
+It defines a relationship between the $u_{n+1}$ but the right hand side is not known at time step $n$.
+Instead of evaluating $u^{n}_{j}$ directly, a system of linear equations must be solved.
+In more complicated differential equations, using implicit time steps leads to nonlinear equations.
+
+The basic technique used to solve nonlinear equations is usually some variant of Newton's Method.
+In Newton's method, we attempt to solve the nonlinear equation $F(X) = 0$ iteratively as follows.
+We make an initial guess $X_0$ and evaluate the residual $r = F(X_0)$ and the Jacobian (derivative) $J$.
+We then make a new guess using the approximation that $F$ is locally linear,
+i.e. we apply a shift $\Delta X$ such that $J \Delta X = -r$.
+This simple method works amazing well, but it can fail to converge if a function
+has too large a second derivative or if a bad initial guess is made.
+
+Nonlinear solvers are a mature field in applied mathematics with their own rich tradition.
+We learned during the guest lecture of a few of the advanced techniques 
+used in Trilinos (NOX) for solving nonlinear equations:
+\begin{itemize}
+\item{\textbf(line search)} rather than applying the full $\Delta x$ implied by Newton's method,
+perform a line search in that direction; often the step size chosen will be smaller
+\item{\textbf{trust region}} by comparing the predicted and actual function values,
+maintain an estimate of how large a region the derivative approximation is valid
+for.  When taking a step, limit it to this trust region.
+\item{\textbf{second derivative methods}} build up an estimate of the second derivative as well
+as the first derivative and use it for a sharper estimate of the step to take
+\item{\textbf{homotopy methods}} identify a parameter in the equation that governs its behavior.
+It should allow for a simpler solution when the value changes 
+(e.g. solving RBC is easier when the Rayleigh number is lower).
+Solve the system at an easy setting, then use that solution as the initial guess
+ for a new solution at a higher setting.  Gradually iterate to the solution at
+ the desired parameter value.
+\end{itemize}
+
+A third important idea in the numerical solution of differential equations is adaptive time steps.
+An adaptive solver formulates an estimate of the error at a time step.  
+If the error exceeds a tolerance (which is an input parameter) the step is rejected and 
+a new attempt is made with a smaller time step.
+Adaptive time steps can be beneficial on problems where there is more ``action'' in the
+system at some times than others.  
+The classic example of this phenomenon in introductory graduate courses on this
+topic is the Brusselator system from chemical kinetics.
 
 \section{Parameters of the Simulation}
 All parameters to the simulation are input with a configuration file.
@@ -294,8 +376,24 @@ using a reference density of 1.0 and a reference temperature of 0.5, the mean fo
 \end{itemize}
 
 \section{Results}
+snapshot of temperature at a moment when it looks interesting \\
+snapshot of pressure \\
+snapshot of velocity fields (x and y) \\
+visualization of vorticity field if possible
 
 \section{Conclusions and Future Work}
+Extreme scale computing is a rich field that is at the leading edge of scientific discovery.
+Our first brief foray was sufficient to give us a sense of the kinds of problems that can
+be solved with these techniques.  
+It is also humbling to learn how much we don't know.  
+Becoming proficient in this field would take months and expertise would require years.
 
+We've seen the power of the Finite Element Method and the tremendous capabilities of 
+a research code like Drekar.  
+We've also felt the pain of trying to compile Drekar from source and configure a job.
+There are some software projects you can build by typing\\
+\tty{git clone my\_program}\\
+\tty{ make my\_program} \\
+Drekar is not one of them!
 
 \end{document}
