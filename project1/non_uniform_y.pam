@@ -1,0 +1,33 @@
+3
+mesh
+  rectilinear
+    nx = 10
+    ny = 40
+    nz = 40
+    bx = 1
+    by = 1
+    bz = 1
+    gmin = 0.0 -1.0 -1.0
+    gmax = 5.0 1.0 1.0
+  end
+  set assign
+    sideset, ilo, 3
+    sideset, ihi, 1
+    sideset, jlo, 5
+    sideset, jhi, 6
+    sideset, klo, 2
+    sideset, khi, 4
+    nodeset, v00, 1
+  end
+  user defined geometry transformation
+    "
+      double yT = 1;
+      double yB = -1;
+      double Ly = yT - yB;
+
+      double pi = 4.0 * atan(1.0);
+
+      outycoord = 0.5 * Ly * (1.0 - cos((inycoord - yB) * pi / Ly )) + yB;
+    "
+  end
+end
