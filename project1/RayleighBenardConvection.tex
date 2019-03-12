@@ -1,0 +1,159 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+% Common packages for mathematical articles
+\usepackage{fullpage,amsmath,amsfonts,mathpazo,microtype,nicefrac,algorithm2e,graphicx}
+
+% MSE Packages
+\usepackage{caption}
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{parskip}
+
+% MSE Make margins a bit smaller
+\usepackage[margin=0.75in]{geometry}
+
+% Set-up for hypertext references
+\usepackage{hyperref,color,textcomp}
+\definecolor{webgreen}{rgb}{0,.35,0}
+\definecolor{webbrown}{rgb}{.6,0,0}
+\definecolor{RoyalBlue}{rgb}{0,0,0.9}
+\hypersetup{
+   colorlinks=true, linktocpage=true, pdfstartpage=3, pdfstartview=FitV,
+   breaklinks=true, pdfpagemode=UseNone, pageanchor=true, pdfpagemode=UseOutlines,
+   plainpages=false, bookmarksnumbered, bookmarksopen=true, bookmarksopenlevel=1,
+   hypertexnames=true, pdfhighlight=/O,
+   urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen,
+   pdfsubject={Harvard IACS AC 290 R},
+   pdfkeywords={},
+   pdfcreator={pdfLaTeX},
+   pdfproducer={LaTeX with hyperref}
+}
+\hypersetup{pdftitle={AC290-RBC}}
+
+
+% MSE Macros
+\newcommand{\tty}[1]{\texttt{#1}}
+\newcommand{\uu}{\vectorbold{u}}
+\newcommand{\vv}{\vectorbold{u}}
+\newcommand{\Laplace}{\Delta}
+
+%***Start of Document***
+\title{Numerical Simulation of Rayleigh-B\'enard Convection}
+\author{Harvard IACS AC 290R - Group 1 \\
+Michael S. Emanuel \\
+Jonathan Guillotte-Blouin \\
+Yue Sun \\
+}
+\date{14-March-2019} 
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement and Motivation}
+AC 290R is a course on extreme computing with a focus on the application domain of fluid dynamics.
+Fluid dynamics is one of the most mature areas of high performance computation.
+Long before there were social networks, scientists and enginners have used 
+the most powerful computers available to understand weather systems and aerodynamics.
+For our project in this module, we carried out a large scale numerical simulation of 
+Rayleigh-B\'enard Convection using the Drekar code running on Harvard's Odyssey supercomputing cluster.  
+\href{https://en.wikipedia.org/wiki/Rayleigh%E2\%80%93B%C3%A9nard_convection}
+{Rayleigh-B\'enard Convection} (RBC) is a classical problem in fluid dynamics.
+It is the phyical phenomenon that arises any time a fluid in a gravitational field has a temperature gradient.
+As anyone who lives in an old building can attest, hot air rises and cold air falls.  
+This buoyancy effect of warm fluids expanding and becoming less dense is quite general.
+When the temperature driven thermal forces are large enough compared to viscous forces,
+the fluid will move with characteristic circular flows bringing hot fluid higher and cold fluid lower.
+If the the thermal forces become large enough, a turbulent flow will emerge.
+
+A number of scientifically important physical phenomena involve RBC.
+Some of the more prominent ones include:
+\begin{itemize}
+\item\href{https://en.wikipedia.org/wiki/Stellar_evolution}{Stellar evolution}
+The gas at the center of a star is hotter than the gas at the outside, and a spherical RBC flow develops
+\item\href{https://en.wikipedia.org/wiki/Plate_tectonics}{Plate tectonics}
+The center of the earth hot, with a layer of magma on top and a cool crust.  
+Over geologic time scales, the earth's mantle behaves like a fluid, and plate tectonics is an instance of RBC.
+\item{Weather systems} Warm air rises in the earth's atmosphere and RBC drives weather processes.
+\end{itemize}
+
+Our goals in this project are two-fold.  
+We would like to learn some basic precepts of fluid dynamics and gain a working knowledge of RBC.
+We acknowledge however that fliud dynamics is far too large and complicated a field for us 
+to gain a deep understanding in such a short time.
+Our primary goal, as suggested by the course title \textbf{Extreme Computing}
+is to learn state of the art techniques in scientific computing at a large scale.
+We choose to work on a real problem, RBC, rather than a toy problem because
+it is both more interesting and we will learn more.
+
+The particular problem we simulated numerically is a two dimensional turbulent Rayleigh-B\'enard Convection.  
+This is described mathematically with a set of three equations called the Boussinesq equations.
+The \href{https://en.wikipedia.org/wiki/Boussinesq_approximation_(buoyancy)}{Boussinesq approximation} 
+is based on a linearization of the buoyancy effect.
+The buoyancy effect is approximated as 
+$$ \rho(T_0 + \delta T) \approx \rho(T_0) - \frac{\partial \rho}{\partial T}\Bigr|_{T=T_0}$$
+We define the coefficient of volume expansion as
+\footnote{See here a discussion of  \href{https://en.wikipedia.org/wiki/Thermal_expansion}{thermal expansion} generally}
+$$\alpha_V = -\frac{1}{\rho_0}\frac{\partial \rho}{\partial T}\Bigr|_{T=T_0}$$
+The coefficient of volume expansion is a property of a fluid.
+The second simplifying assumption made in the Boussinesq equations is that fluids are incompressible
+(except for this linear sensitivity of their density to temperature).
+The Navier-Stokes equations then simplify to the three Boussinesq equations:
+\begin{align}
+\frac{\partial \uu}{\partial t} + \grad \cdot (\uu \otimes \uu) &= \frac{1}{\rho_0} \grad P + \nu \grad^2 \uu + \alpha_V g T \hat{y} \\
+\grad \cdot \uu &= 0 \\
+\frac{\partial T}{\partial t} + \grad \cdot (uT) &= \kappa \grad^2 T
+\end{align}
+
+In these equations, $\rho_0$ is is the density at the reference temperature $T_0$.
+$\nu$ is the fluid viscosity and $\kappa$ is the thermal diffusivity.
+
+The presentation above includes the physical constants and is suitable for engineering.
+For mathematics, it is often preferable to use nondimensional equations.
+\footnote{See this article on the technique of \href{https://en.wikipedia.org/wiki/Nondimensionalization}{nomdimensionalization}.}
+There are three choices that have been used for nondimensionalizing the Boussinesq equations.
+We follow the classical approach and choose the following dimensionless parameters:
+\begin{itemize}
+\item{$\Delta T = T_{bot} - T_{top}$} the temperature difference; this is the temperature scale
+\item{$H=y_{top} - y_{bot}$} the height of the channel; this is the length scale
+\item{$\tau = \nicefrac{H^2}{\kappa}$} is the time scale; this choice is called ``thermal scaling''
+\item{$U = \nicefrac{H}{\tau}$} is the velocity scale
+\item{$\rho_0 U^2$} is the pressure scale
+\end{itemize}
+
+With this choice of dimensionless parameters, we have the non-dimensional Boussinequ equations:
+\begin{align}
+\frac{\partial \uu}{\partial t} + \grad \cdot (\uu \otimes \uu) &= \grad P + \textrm{Pr} \grad^2 \uu + \textrm{RaPr}T \hat{y} \\
+\grad \cdot \uu &= 0 \\
+\frac{\partial T}{\partial t} + \grad \cdot (uT) &=  \grad^2 T
+\end{align}
+
+There are two dimensionless ratios appearing:
+\begin{itemize}
+\item{Pr} is the \href{https://en.wikipedia.org/wiki/Prandtl_number}{Prandtl number}, $\textrm{Pr} = \nicefrac{\nu}{\kappa}$.  
+This is the ratio of the thermal viscosity to the thermal diffusivity and is a property of the fluid.
+\item{Ra} is the famous \href{https://en.wikipedia.org/wiki/Rayleigh_number}{Rayleigh number}.  It is defined by
+$$\textrm{Ra} = \frac{\alpha_V \Laplace T g H^3}{\nu \kappa}$$
+The Rayleigh number describes the ratio of temperature driven forces to viscous forces.
+For this reason, a very low Rayleigh number leads to no convective flow; 
+an intermediate Rayleigh number leads to a somewhat regular flow;
+and a high Rayleigh number leads to a turbulent flow.
+\end{itemize}
+
+\section{Description of Code}
+
+\section{Overview of Numerical Methods Used}
+
+\section{Parameters of the Simulation}
+
+\section{Results}
+
+\section{Conclusions and Future Work}
+
+Your text goes here.
+
+\subsection{A subsection}
+
+More text.
+
+\end{document}

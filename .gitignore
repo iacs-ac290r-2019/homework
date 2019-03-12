@@ -2,7 +2,11 @@
 .DS_Store
 
 # MSE
-*.x
+
+# Latex intermediates
+*.aux
+*.synctex.gz
+*.log
 
 # Doxygen build directories
 hw1/html
@@ -38,5 +42,6 @@ hw1/latex
 
 # Executables
 *.exe
+*.x
 *.out
 *.app
