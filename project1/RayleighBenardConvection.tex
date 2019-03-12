@@ -53,7 +53,7 @@ Yue Sun \\
 \section{Problem Statement and Motivation}
 AC 290R is a course on extreme computing with a focus on the application domain of fluid dynamics.
 Fluid dynamics is one of the most mature areas of high performance computation.
-Long before there were social networks, scientists and enginners have used 
+Long before there were social networks, scientists and engineers have used 
 the most powerful computers available to understand weather systems and aerodynamics.
 For our project in this module, we carried out a large scale numerical simulation of 
 Rayleigh-B\'enard Convection using the Drekar code running on Harvard's Odyssey supercomputing cluster.  
@@ -69,17 +69,18 @@ If the the thermal forces become large enough, a turbulent flow will emerge.
 A number of scientifically important physical phenomena involve RBC.
 Some of the more prominent ones include:
 \begin{itemize}
-\item\href{https://en.wikipedia.org/wiki/Stellar_evolution}{Stellar evolution}
+\item\href{https://en.wikipedia.org/wiki/Stellar_evolution}{Stellar evolution}:
 The gas at the center of a star is hotter than the gas at the outside, and a spherical RBC flow develops
-\item\href{https://en.wikipedia.org/wiki/Plate_tectonics}{Plate tectonics}
+\item\href{https://en.wikipedia.org/wiki/Plate_tectonics}{Plate tectonics}:
 The center of the earth hot, with a layer of magma on top and a cool crust.  
 Over geologic time scales, the earth's mantle behaves like a fluid, and plate tectonics is an instance of RBC.
-\item{Weather systems} Warm air rises in the earth's atmosphere and RBC drives weather processes.
+\item{Weather systems}: Warm air rises in the earth's atmosphere and RBC drives weather processes. 
+A concrete example is a \href{https://en.wikipedia.org/wiki/Mesoscale_convective_system}{mesoscale convective system}.
 \end{itemize}
 
 Our goals in this project are two-fold.  
 We would like to learn some basic precepts of fluid dynamics and gain a working knowledge of RBC.
-We acknowledge however that fliud dynamics is far too large and complicated a field for us 
+We acknowledge however that fluid dynamics is far too large and complicated a field for us 
 to gain a deep understanding in such a short time.
 Our primary goal, as suggested by the course title \textbf{Extreme Computing}
 is to learn state of the art techniques in scientific computing at a large scale.
@@ -121,7 +122,7 @@ We follow the classical approach and choose the following dimensionless paramete
 \item{$\rho_0 U^2$} is the pressure scale
 \end{itemize}
 
-With this choice of dimensionless parameters, we have the non-dimensional Boussinequ equations:
+With this choice of dimensionless parameters, we have the non-dimensional Boussinesq equations:
 \begin{align}
 \frac{\partial \uu}{\partial t} + \grad \cdot (\uu \otimes \uu) &= \grad P + \textrm{Pr} \grad^2 \uu + \textrm{RaPr}T \hat{y} \\
 \grad \cdot \uu &= 0 \\
@@ -141,6 +142,102 @@ and a high Rayleigh number leads to a turbulent flow.
 \end{itemize}
 
 \section{Description of Code}
+Drekar is a large scale computational fluid dynamics (CFD) code.
+The name Drekar comes from the norse word describing a 
+\href{https://en.wikipedia.org/wiki/Longship}{Viking Longship}.
+It is under active development at \href{https://www.sandia.gov/}{Sandia National Laboratories}
+and was recently made partially open source; details can be found at the US Department of Energy
+Office of Scientific and Technical Information at \href{https://www.osti.gov/biblio/1364765}{OSTI.gov}.
+Because some parts of this code are sensitive, e.g. they could be used for simulations of nuclear weapons,
+these parts are not being released to the public.
+Sensitive components will remain restricted to employees and affiliates of Sandia.
+
+
+Drekar solves the partial differential equations (PDEs) of fluids using the Finite Element Method.
+In addition to simulating traditional fluid dynamics problems, Drekar also has the capability to handle
+electromagnetic forces.  This is important when modeling plasma physics and stars for example.
+Drekar is able to accurately simulate different kinds of physical systems including incompressible fluids,
+low-mach compressible fluids, and compressible / incompressible magnetohydrodynamics.
+It can also handle multi-species plasmas interacting with a magnetic field;
+this is used to simulate \href{https://en.wikipedia.org/wiki/Tokamak}{Tokamak} reactors.
+Researchers at Sandia are collaborating with the team building the \href{https://en.wikipedia.org/wiki/ITER}{ITER}
+in Southern france, which will be the world's largest megnetic confinement plasma physics experiment when
+it is constructed.
+
+The heart of Drekar is a massively parallel implementation of the 
+\href{https://en.wikipedia.org/wiki/Finite_element_method}{Finite Element Method}.
+The Finite Element Method is a numerical method for solving partial differential equations.
+We will discuss it further in the next section.
+Drekar is a modern software project written in C++ and making extensive use of classes and templates.  
+This allows it to be flexible and to run efficiently on heterogeneous hardware.
+
+Drekar implements parallelization at multiple levels.
+At the top level, it uses 
+\href{https://en.wikipedia.org/wiki/Message_Passing_Interface}{Message Passing Interface} (MPI)
+to distribute computations across multiple computing nodes that are connected on
+the same high performance network.
+Back end modules of Drekar also permit parallelization at the level of C++ threads;
+\href{https://en.wikipedia.org/wiki/OpenMP}{OpenMP} (multiple cores on one host); 
+and GPUs with \href{https://en.wikipedia.org/wiki/CUDA}{CUDA}.
+
+Drekar has basic components that handle primitive linear algebra tasks such as 
+distributing a matrix or a vector across multiple compute nodes.
+Building up in complexity, it knows how to add vectors,
+perform vector dot products and matrix / vector products.
+It can solve linear equations exactly or approximately using Krylov methods,
+and similarly for eigenvalue problems.
+And it can solve nonlinear equations using iterative methods
+(typically refinements of Newton's method).
+
+These building blocks enable Drekar to simulate a wide variety of PDEs
+using the finite element method, and to perform these scales efficiently at scale.
+Drekar handles continuous, discontinuous and stabilized finite elements.
+The flexibility and wide range of the C++ classes in Drekar allow it to simulate
+mixed-integration finite element bases include nodal, edge, face and volume elements.
+This allows a wide range of problems to be described.
+The breadth of elements are particularly useful when enforcing complex boundary conditions.
+Drekar also has the flexibility of simulating multiple physics regimes, called blocks, in one system.
+
+Drekar includes algorithms for time integrating differential equations that are 
+fully explicit, fully implicit, and mixed implicit / explicit (IMEX).  
+Some degree of implicit solution is often required for real world problems
+when there is a wide range of time scales.  If the fastest time scale
+is too many orders of magnitude shorter than the longest one,
+an explicit solver will either take time steps too large to capture the physics,
+or take too long to run.  
+Implicit and IMEX solvers permit the simulation to implicitly solve for physical
+effects that are on too short a time scale to solve explicitly.
+
+Drekar has strong tools for automatic differentiation.
+These are necessary because many methods used in Drekar require
+taking derivatives of functions, e.g. solving nonlinear equations with a variant of Newton's method.  
+Some other software libraries required users to supply hand coded derivatives, 
+which can be time consuming and error prone;
+or to use numerical derivatives, which can be slow.
+Automatic differentiation allows the best of both worlds.
+
+Drekar is built as a part of a collection of packages called
+\href{https://trilinos.github.io/}{Trilinos}.
+Trilinos arose out of an effort at Sandia to avoid duplication of effort across
+different research groups and allow each group to focus on the frontier
+of discovery in their area without reinventing the wheel.
+Some packages in Trilinos relevant to Drekar include:
+\begin{itemize}
+\item{Linear solvers}: \textit{Amesos} (direct) and \textit{Aztec00}, \textit{Belos} (indirect)
+\item{Preconditioners}: \textit{lfpack} (algebraic), \textit{ML} (multilevel), \textit{Meros} (block)
+\item{Eigenvalue solvers}: \textit{Anasazi}
+\item{Nonlinear solvers}: \textit{NOX}
+\item{Time Integrators}: \textit{Rhythmos, Tempus}
+\item{Automatic Differentiation}: \textit{Sacado}
+\end{itemize}
+Consider for a moment how many of the basic building blocks used by Drekar
+are provided by the packages listed above.
+By building on this existing work, the developers of Drekar were able 
+to concentrate their efforts on the distinctive aspects of the problem,
+namely solving PDEs with the Finite Element Method.
+Having seen a number of software packages over the year, 
+our first impression of Drekar is that it is a very sophisticated 
+and impressive piece of software engineering.
 
 \section{Overview of Numerical Methods Used}
 
