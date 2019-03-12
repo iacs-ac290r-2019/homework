@@ -239,6 +239,16 @@ Having seen a number of software packages over the year,
 our first impression of Drekar is that it is a very sophisticated 
 and impressive piece of software engineering.
 
+\subsection{The Software Behind The Simulation}
+
+We will spare you with the details of building Drekar and Trilinos, as we essentially followed word for word the instructions presented in \href{https://github.com/dsondak/DrekarBase/blob/master/README.md}{the repo's README}.
+
+Once that was done, we experimented with toy examples --- for instance, 64x64 grids on just a single Odyssey core --- to see how Drekar behaved, and how to gather its \textit{.exo} output. To visualize the output, we used ParaView, which is another software tool built at Sandia labs; in our case, we could download the \textit{.exo} file to our local machine, import it to the ParaView GUI, and then fiddle with the vast array of visualization features. That strategy could not scale with realistic simulation output, which can be on the terabyte scale, but it was good enough to get used to the tools and to prototype.
+
+As for running Drekar, three input files were particularly important: \textit{case1.sh}, \textit{case1.pam}, and \textit{case1.xml}. Because the simulation is compute-heavy and takes a long time to run, it was not reasonable to run it on either login nodes, or via an interactive session. Therefore, we wrote \textit{case1.sh}, which defines the various SLURM flags, and parameters for the simulation to be run as a batch job on Odyssey using \textit{sbatch case1.sh}. In the end, this batch job runs the Drekar executable with \textit{case1.xml} as input. The XML file describes pretty much all the information about the desired environment in order for Drekar to run properly. Indeed, Drekar by itself (including Trilinos) is a gigantic optimized toolkit, but it is not compiled with a series of specific actions to do. Fortunately, the behaviour we want to emulate can be written in an XML or YAML file, which is then dynamically parsed by Drekar afterwards. We can set crucial information like boundary counditions, time steps, solvers, and so on, without having to implement any of it (or very little). The XML file contains two other important pieces of information: the path to the \textit{.exo} output, as well as the pamgen input for the grid specification. The exodus file is yet another creation of Sandia labs, which aims at storing and accessing finite element analyses.\cite{exo} It is important to note that if Drekar is running on $n$ cores in parallel, $n$ exodus files are created, and updated over the course of the simulation. Once the simulation is over, it might be useful to combine all these partitioned files into a single exodus files: to do that, we use the epu CLI application. However, that last step is not necessary if we only want to visualize the analyses using ParaView, as it can handle both having the partitioned files, or the combined exodus output. This brings us to the last file: \textit{case1.pam}. Pamgen is a technology which enables us to easily define the mesh used during our finite element analysis.\cite{pam} We could have used other tools to generate such mesh, but Pamgen is a popular approach which we were presented in the context of this class.
+
+
+
 \section{Overview of Numerical Methods Used}
 The main numerical methods used in Drekar are the Finite Element Method (FEM)
 and nonlinear equation solvers.
@@ -395,5 +405,17 @@ There are some software projects you can build by typing\\
 \tty{git clone my\_program}\\
 \tty{ make my\_program} \\
 Drekar is not one of them!
+
+
+%% bibliography
+
+\begin{thebibliography}{9}
+\bibitem{exo} 
+Schoof, L. A., \& Yarberry, V. R. (1994). EXODUS II: a finite element data model (No. SAND-92-2137). Sandia National Labs., Albuquerque, NM (United States).
+
+\bibitem{pam}
+DRAKE, R., FOUCAR, J., HENSINGER, D., WONG, M., BUDGE, K., \& GARDINER, T. (2008). Pamgen (No. PAMGEN; 002393WKSTN00). Sandia National Laboratories.
+
+\end{thebibliography}
 
 \end{document}
