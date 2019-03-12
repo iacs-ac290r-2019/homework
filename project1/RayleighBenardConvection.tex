@@ -92,7 +92,7 @@ This is described mathematically with a set of three equations called the Boussi
 The \href{https://en.wikipedia.org/wiki/Boussinesq_approximation_(buoyancy)}{Boussinesq approximation} 
 is based on a linearization of the buoyancy effect.
 The buoyancy effect is approximated as 
-$$ \rho(T_0 + \delta T) \approx \rho(T_0) - \frac{\partial \rho}{\partial T}\Bigr|_{T=T_0}$$
+$$ \rho(T_0 + \delta T) \approx \rho(T_0) - \frac{\partial \rho}{\partial T}\Bigr|_{T=T_0} \delta T$$
 We define the coefficient of volume expansion as
 \footnote{See here a discussion of  \href{https://en.wikipedia.org/wiki/Thermal_expansion}{thermal expansion} generally}
 $$\alpha_V = -\frac{1}{\rho_0}\frac{\partial \rho}{\partial T}\Bigr|_{T=T_0}$$
@@ -241,12 +241,37 @@ and impressive piece of software engineering.
 
 \subsection{The Software Behind The Simulation}
 
-We will spare you with the details of building Drekar and Trilinos, as we essentially followed word for word the instructions presented in \href{https://github.com/dsondak/DrekarBase/blob/master/README.md}{the repo's README}.
+We will spare you with the details of building Drekar and Trilinos, as we essentially followed word for word the instructions presented in 
+\href{https://github.com/dsondak/DrekarBase/blob/master/README.md}{the repo's README}.
 
-Once that was done, we experimented with toy examples --- for instance, 64x64 grids on just a single Odyssey core --- to see how Drekar behaved, and how to gather its \textit{.exo} output. To visualize the output, we used ParaView, which is another software tool built at Sandia labs; in our case, we could download the \textit{.exo} file to our local machine, import it to the ParaView GUI, and then fiddle with the vast array of visualization features. That strategy could not scale with realistic simulation output, which can be on the terabyte scale, but it was good enough to get used to the tools and to prototype.
+Once that was done, we experimented with toy examples --- for instance, 64x64 grids on just a single Odyssey core --- 
+to see how Drekar behaved, and how to gather its \textit{.exo} output. To visualize the output, we used ParaView, 
+which is another software tool built at Sandia labs; in our case, we could download the \textit{.exo} file to our local machine, 
+import it to the ParaView GUI, and then fiddle with the vast array of visualization features. 
+That strategy could not scale with realistic simulation output, which can be on the terabyte scale, 
+but it was good enough to get used to the tools and to prototype.
 
-As for running Drekar, three input files were particularly important: \textit{case1.sh}, \textit{case1.pam}, and \textit{case1.xml}. Because the simulation is compute-heavy and takes a long time to run, it was not reasonable to run it on either login nodes, or via an interactive session. Therefore, we wrote \textit{case1.sh}, which defines the various SLURM flags, and parameters for the simulation to be run as a batch job on Odyssey using \textit{sbatch case1.sh}. In the end, this batch job runs the Drekar executable with \textit{case1.xml} as input. The XML file describes pretty much all the information about the desired environment in order for Drekar to run properly. Indeed, Drekar by itself (including Trilinos) is a gigantic optimized toolkit, but it is not compiled with a series of specific actions to do. Fortunately, the behaviour we want to emulate can be written in an XML or YAML file, which is then dynamically parsed by Drekar afterwards. We can set crucial information like boundary counditions, time steps, solvers, and so on, without having to implement any of it (or very little). The XML file contains two other important pieces of information: the path to the \textit{.exo} output, as well as the pamgen input for the grid specification. The exodus file is yet another creation of Sandia labs, which aims at storing and accessing finite element analyses.\cite{exo} It is important to note that if Drekar is running on $n$ cores in parallel, $n$ exodus files are created, and updated over the course of the simulation. Once the simulation is over, it might be useful to combine all these partitioned files into a single exodus files: to do that, we use the epu CLI application. However, that last step is not necessary if we only want to visualize the analyses using ParaView, as it can handle both having the partitioned files, or the combined exodus output. This brings us to the last file: \textit{case1.pam}. Pamgen is a technology which enables us to easily define the mesh used during our finite element analysis.\cite{pam} We could have used other tools to generate such mesh, but Pamgen is a popular approach which we were presented in the context of this class.
-
+As for running Drekar, three input files were particularly important: \textit{case1.sh}, \textit{case1.pam}, and \textit{case1.xml}. 
+Because the simulation is compute-heavy and takes a long time to run, it was not reasonable to run it on 
+either login nodes, or via an interactive session. 
+Therefore, we wrote \textit{case1.sh}, which defines the various SLURM flags, and parameters for the simulation
+to be run as a batch job on Odyssey using \textit{sbatch case1.sh}. 
+In the end, this batch job runs the Drekar executable with \textit{case1.xml} as input. 
+The XML file describes pretty much all the information about the desired environment in order for Drekar to run properly. 
+Indeed, Drekar by itself (including Trilinos) is a gigantic optimized toolkit, but it is not compiled with a series of specific actions to do. 
+Fortunately, the behaviour we want to emulate can be written in an XML or YAML file, which is then dynamically parsed by Drekar afterwards. 
+We can set crucial information like boundary counditions, time steps, solvers, and so on, without having to implement any of it (or very little). 
+The XML file contains two other important pieces of information: the path to the \textit{.exo} output, 
+as well as the pamgen input for the grid specification. 
+The exodus file is yet another creation of Sandia labs, which aims at storing and accessing finite element analyses.\cite{exo} 
+It is important to note that if Drekar is running on $n$ cores in parallel, $n$ exodus files are created, 
+and updated over the course of the simulation. 
+Once the simulation is over, it might be useful to combine all these partitioned files into a single exodus files: 
+to do that, we use the epu CLI application. However, that last step is not necessary if we only want to visualize
+ the analyses using ParaView, as it can handle both having the partitioned files, or the combined exodus output.  
+This brings us to the last file: \textit{case1.pam}.  
+Pamgen is a technology which enables us to easily define the mesh used during our finite element analysis.\cite{pam} 
+We could have used other tools to generate such mesh, but Pamgen is a popular approach which we were presented in the context of this class.
 
 
 \section{Overview of Numerical Methods Used}
@@ -266,7 +291,9 @@ Different bases give rise to different methods, and some work better on differen
 Drekar has the capability to use a number of different bases for the FEM.
 As a concrete example of this technique, on our homework assignment we solved the Poisson
 equation with the FEM by using the basis piecewise linear functions 
-connecting two adjacent nodes.
+connecting two adjacent nodes.  
+This was a direct solve to a steady state rather than a time integration,
+but it illustrates the mechanics of the FEM.
 
 Once a basis has been chosen, the state of the system at a moment in time
 can be described by assigning weights to each basis vector.  
@@ -337,28 +364,32 @@ topic is the Brusselator system from chemical kinetics.
 All parameters to the simulation are input with a configuration file.
 This can be passed in either XML format (the old technique) or YML (the new technique).
 We were provided with a template XML file which we then modified to incorporate the 
-specific parameter settings 
+specific parameter settings.
+We made two simulation runs, \textbf{case 1} (on 512 cores for about a day)
+and \textbf{case 2} (on 1024 for about 5 days).  
+There was a slight change in parameter values explained below.
 
 We generated a mesh using a program called Pamgen.  Here are the key parameters for the mesh (spatial layout):
 \begin{itemize}
 \item{length} $L=2$  with $N_x = 2048 + 1$ uniformly spaced mesh points
 \item{height} $H=1$ with $N_y = 1024 + 1$ Chebyshev spaced mesh points
 \item{$\Gamma = \nicefrac{L}{H} = 2$}
-\item{x} ranges from -1 to +1
-\item{y} ranges from -1 to +1
+\item{x} ranges from 0 to 2
+\item{y} ranges from 0 to 1
 \end{itemize}
 
 Here are descriptions of the key physical parameters for the simulation
-\\ \textbf{NEED TO CHECK THESE AGAINST FILE RUN ON ODYSSEY!}
 \begin{itemize}
-\item{density} $\rho_0 = 1.0$
-\item{viscosity} $\nu = 0.01$
-\item{volume expansion coefficient} $\alpha_V = 10^6$
-\item{gravity} $g = 1.0$
-\item{heat capacity} 1.0
-\item{thermal conductivity} $\kappa = 0.01$
-\item{temperature change} $\Delta T = 1.0$ 
-\item{height} $H = 1.0$
+\item{\textbf{density}} $\rho_0 = 1.0$
+\item{\textbf{viscosity}} $\nu = 0.01$
+\item{\textbf{volume expansion coefficient}} $\alpha_V = 10^6$
+\item{\textbf{gravity}} $g = 1.0$
+\item{\textbf{heat capacity}} $C_p = 1.0$
+\item{\textbf{thermal conductivity}} $k = 0.01$
+\item{\textbf{thermal diffusivity}} $\kappa = \nicefrac{k}{\rho C_p} = 0.01$
+\item{\textbf{temperature change}} $\Delta T = 1.0$ 
+\item{\textbf{height}} $H = 1.0$
+\item{\textbf{time of simulation}} we attempted to simulate from time $t=0$ to $t=5$.
 \end{itemize}
 
 Using these parameters, we can compute the implied dimensionless constants:
@@ -373,19 +404,49 @@ In addition to the phyiscal constants, some additional parameters were passed to
 specifying the boundary conditions and how the physics should be modeled.
 Important settings of this type included:
 \begin{itemize}
-\item{Initial conditions} $U_x = 0$, $U_y = 0$, $P = 0$.  The velocity and pressure started uniformly zero.
-The temperature starts with a trigonometric function from 0 to 1.
-\item{No slip boundary condition} $U_x = 0$, $U_y = 0$ 
+\item{\textbf{Initial conditions}} $U_x = 0$, $U_y = 0$, $P = 0$.  The velocity and pressure started uniformly zero.\\
+On our initial run with 512 cores (case 1), the temperature starts with a trigonometric function from 0 to 1
+which is the analytical solution at steady state on an infinite plane first worked out by Rayleigh. \\
+We observed that the solver had a difficult time ramping up under these conditions 
+due to the highly turbulent flow at $\textrm{Ra} = 10^{10}$.  
+For this reason we changed the initial conditions on our second run, case 2. 
+\item{\textbf{No slip boundary condition}} $U_x = 0$, $U_y = 0$ 
 on the top (surface\_4) and bottom (surface\_2).
-\item{Applied temperature gradient} $T=0$ at the top, $T=1$ at the bottom; therefore $\Delta T = 1$
+\item{\textbf{Applied temperature gradient}} $T=0$ at the top, $T=1$ at the bottom; therefore $\Delta T = 1$.
+This is true for all time $t$ in case 1.  
+In case 2, we set the temperature at the bottom plate to be 
+$T(t) = 1 - e^{-t / \tau}$ where the time scale $\tau$ for ramping up the temperature was $\tau = 0.2$.
+This is an example of the technique of \textit{parameter continuation}.
 \item{Finite element basis for PDEs} The continuity, momentum and energy equations all share the same
 finite element settings.  The basis is HGrad of order 1 with integration order 2.  Stabilization is on.
+The basis HGrad consists of piecewise polynomial elements.  
+When the order is 1, this is the familiar piecewise linear function in 1D.
+For our case of a 2D planar domain, the elements are still piecewise linear, 
+but on recetangular tiles rather than line segments.
 \item{Stress tensor} is modeled as Newtonian.
 \item{Source momentum} is modeled with the Boussinesq approximation; 
 using a reference density of 1.0 and a reference temperature of 0.5, the mean for the simulation.
 \end{itemize}
 
 \section{Results}
+We made two simulation runs:
+\begin{itemize}
+\item{\textbf{case 1}} Our first run was intended to run on 1024 CPU cores but only ran on 512 cores due to a hardware fault.
+We terminated it and restarted it when the problem was diagnosed and corrected.  We ended up with 22.7 GB of output
+encompassing about 0.22 of simulation time of 5.0 desired.
+\item{\textbf{case 2}} We ran a second batch, starting from scratch rather than re-starting case 1.
+This was run on the full 1024 cores.  However, the run terminated early when it crashed due to running out of memory.
+Diagnostics reveal that it also steadily slowed down during the simulation, ending up with only 0.77 time units.
+The output files appear to have become corrupted as a result of the crash and may be unusable.
+Based on the observed pattern of steadily deteriorating performance followed by an out of memory error,
+we suspect there may be a memory leak in Drekar that only manifested on our compilation when we ran
+the large job for an extended time.
+\end{itemize}
+
+We must admit to a measure of disappointment that our largest simulation run did not successfully complete.
+However if you try something and know the result ahead of time, 
+what you're doing might be instructive but probably isn't science!
+
 snapshot of temperature at a moment when it looks interesting \\
 snapshot of pressure \\
 snapshot of velocity fields (x and y) \\
@@ -406,6 +467,11 @@ There are some software projects you can build by typing\\
 \tty{ make my\_program} \\
 Drekar is not one of them!
 
+One obvious piece of future work is to get to the bottom of the performance slowdown 
+and out of memory error that brought simulation case 2 down.
+Once the problem is repaired, we would like the opportunity to run the job to completion.
+We understand that may not be possible due to constraints on computing resources
+but would like to try.
 
 %% bibliography
 
