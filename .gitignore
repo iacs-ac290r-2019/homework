@@ -8,6 +8,9 @@
 *.synctex.gz
 *.log
 
+# Large exodus data files
+*.exo
+
 # Doxygen build directories
 hw1/html
 hw1/latex
