@@ -14,6 +14,8 @@ mkdir uy_frames
 
 mkdir p_frames
 
+mkdir streamline_frames
+
 
 ### load the .exo file
 test.exo is the small one
