@@ -41,15 +41,23 @@ y_2d = np.reshape(y[:], [ny, nx])
 t_1d = np.reshape(t[:], [1, niters])
 
 # function that save the temperature profile at a frame
-def save_temp_frame(frame_number):
+def save_temp_frame_mesh(frame_number):
     fig, ax = plt.subplots(figsize=(15,6))
     fig.subplots_adjust(top=0.9,right=0.9)
 
-    # this is pcolormesh plotting
-    # ax.pcolormesh(x_2d, y_2d, temp[frame_number].reshape(ny,nx), cmap=plt.cm.get_cmap('jet'))
+    ax.pcolormesh(x_2d, y_2d, temp[frame_number].reshape(ny,nx), cmap=plt.cm.get_cmap('jet'))
+    ax.set_xlabel(r'$x$', fontsize=16)
+    ax.set_ylabel(r'$y$', fontsize=16)
+    ax.set_title('Temperature at Frame %04d' % frame_number, fontsize=20)
+    ax.set_aspect(1.0)
+    plt.savefig('temp_frames_mesh/frame%04d.png' % frame_number)
+    plt.close('all')
+    # plt.show()
 
-    # this is contourf plotting with color bar and contours
-    # !!!WARNING!!! some plots may get really noisy, which isn't wrong, but is not goodlooking
+def save_temp_frame_contour(frame_number):
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+
     cs = ax.contourf(x_2d,y_2d,temp[frame_number].reshape(ny,nx),levels=np.linspace(0, 1, 11),cmap=plt.cm.get_cmap('jet'))
     cs.set_clim(0.0,1.0)
     ax.contour(cs, colors='k',linewidths=2.0)
@@ -60,10 +68,10 @@ def save_temp_frame(frame_number):
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('Temperature at Frame %04d' % frame_number, fontsize=20)
     ax.set_aspect(1.0)
-    plt.savefig('temp_frames/frame%04d.png' % frame_number)
+    plt.savefig('temp_frames_contour/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
-
+    
 # function that save the ux profile at a frame
 def save_ux_frame(frame_number):
     fig, ax = plt.subplots(figsize=(15,6))
@@ -118,7 +126,8 @@ def save_p_frame(frame_number):
 # start timer
 t0 = time.time()
 # Number of frames
-iMax = len(p)
+# iMax = len(p)
+iMax = 3
 # Status
 print(f'Processing {iMax} frames...')
 for i in range(iMax):
@@ -133,7 +142,8 @@ for i in range(iMax):
     '''
 
     # Save the frames
-    save_temp_frame(i)
+    save_temp_frame_mesh(i)
+    save_temp_frame_contour(i)
     save_ux_frame(i)
     save_uy_frame(i)
     save_p_frame(i)
