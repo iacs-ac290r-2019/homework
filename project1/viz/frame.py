@@ -42,14 +42,23 @@ t_1d = np.reshape(t[:], [1, niters])
 
 # function that save the temperature profile at a frame
 def save_temp_frame(frame_number):
-    fig = plt.figure(figsize=[15,15])
-    ax = fig.add_subplot(111)
-    ax.pcolormesh(x_2d, y_2d, temp_i, cmap=plt.cm.get_cmap('jet'))
-    # cs = ax.contourf(x_2d,y_2d,temp_i,100,cmap=plt.cm.get_cmap('jet'))
-    # ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+
+    # this is pcolormesh plotting
+    # ax.pcolormesh(x_2d, y_2d, temp[frame_number].reshape(ny,nx), cmap=plt.cm.get_cmap('jet'))
+
+    # this is contourf plotting with color bar and contours
+    # !!!WARNING!!! some plots may get really noisy, which isn't wrong, but is not goodlooking
+    cs = ax.contourf(x_2d,y_2d,temp[frame_number].reshape(ny,nx),levels=np.linspace(0, 1, 11),cmap=plt.cm.get_cmap('jet'))
+    cs.set_clim(0.0,1.0)
+    ax.contour(cs, colors='k',linewidths=2.0)
+    cs.set_clim(vmin=0.0,vmax=1.0)
+    fig.colorbar(cs,ax=ax)
+
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
-    ax.set_title('Temperature at Frame %i' % i, fontsize=20)
+    ax.set_title('Temperature at Frame %04d' % frame_number, fontsize=20)
     ax.set_aspect(1.0)
     plt.savefig('temp_frames/frame%04d.png' % frame_number)
     plt.close('all')
@@ -57,41 +66,50 @@ def save_temp_frame(frame_number):
 
 # function that save the ux profile at a frame
 def save_ux_frame(frame_number):
-    fig = plt.figure(figsize=[15,15])
-    ax = fig.add_subplot(111)
-    cs = ax.contourf(x_2d,y_2d,ux_i,100,cmap=plt.cm.get_cmap('jet'))
-    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+    cs = ax.contourf(x_2d,y_2d,ux[frame_number].reshape(ny,nx),10,cmap=plt.cm.get_cmap('jet'))
+    # cs.set_clim(0.0,1.0)
+    ax.contour(cs, colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
-    ax.set_title('U_x at Frame %i' % i, fontsize=20)
-    ax.set_aspect(1.0)
+    ax.set_title('U_x at Frame %04d' % frame_number, fontsize=20)
+    # ax.set_aspect(1.0)
+    # cs.set_clim(vmin=0.0,vmax=1.0)
+    fig.colorbar(cs,ax=ax)
     plt.savefig('ux_frames/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
 
 # function that save the uy profile at a frame
 def save_uy_frame(frame_number):
-    fig = plt.figure(figsize=[15,15])
-    ax = fig.add_subplot(111)
-    cs = ax.contourf(x_2d,y_2d,uy_i,100,cmap=plt.cm.get_cmap('jet'))
-    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+    cs = ax.contourf(x_2d,y_2d,uy[frame_number].reshape(ny,nx),10,cmap=plt.cm.get_cmap('jet'))
+    # cs.set_clim(0.0,1.0)
+    ax.contour(cs, colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
-    ax.set_title('U_y at Frame %i' % i, fontsize=20)
+    ax.set_title('U_y at Frame %04d' % frame_number, fontsize=20)
     ax.set_aspect(1.0)
+    # cs.set_clim(vmin=0.0,vmax=1.0)
+    fig.colorbar(cs,ax=ax)
     plt.savefig('uy_frames/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
 
 def save_p_frame(frame_number):
-    fig = plt.figure(figsize=[15,15])
-    ax = fig.add_subplot(111)
-    cs = ax.contourf(x_2d,y_2d,p_i,100,cmap=plt.cm.get_cmap('jet'))
-    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+    cs = ax.contourf(x_2d,y_2d,p[frame_number].reshape(ny,nx),10,cmap=plt.cm.get_cmap('jet'))
+    # cs.set_clim(0.0,1.0)
+    ax.contour(cs, colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
-    ax.set_title('Pressure at Frame %i' % i, fontsize=20)
+    ax.set_title('Pressure at Frame %04d' % frame_number, fontsize=20)
     ax.set_aspect(1.0)
+    # cs.set_clim(vmin=0.0,vmax=1.0)
+    fig.colorbar(cs,ax=ax)
     plt.savefig('p_frames/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
@@ -104,11 +122,16 @@ iMax = len(p)
 # Status
 print(f'Processing {iMax} frames...')
 for i in range(iMax):
+    '''
     # load variables step by step
+    no need to load the varaibles outside the function
+    the function now takes care of loading the variables step by step
     p_i = p[i].reshape(ny,nx)
     temp_i = temp[i].reshape(ny,nx)
     ux_i = ux[i].reshape(ny,nx)
     uy_i = uy[i].reshape(ny,nx)
+    '''
+
     # Save the frames
     save_temp_frame(i)
     save_ux_frame(i)
