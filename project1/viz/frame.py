@@ -17,6 +17,7 @@ import netCDF4
 # u_x u_y fields some contour lines are dottted to indicate negativity
 plt.rcParams['contour.negative_linestyle'] = 'solid'
 
+# shape of the grid
 ny = 1025 # subject to change 1025
 nx = 2049 # subject to change 2049
 
@@ -41,27 +42,29 @@ y_2d = np.reshape(y[:], [ny, nx])
 t_1d = np.reshape(t[:], [1, niters])
 
 # function that save the temperature profile at a frame
-def save_temp_frame_mesh(frame_number):
+def save_temp_frame_mesh(frame_number, t_max = 1.0):
     fig, ax = plt.subplots(figsize=(15,6))
     fig.subplots_adjust(top=0.9,right=0.9)
 
-    ax.pcolormesh(x_2d, y_2d, temp[frame_number].reshape(ny,nx), cmap=plt.cm.get_cmap('jet'))
+    cs = ax.pcolormesh(x_2d, y_2d, temp[frame_number].reshape(ny,nx), cmap=plt.cm.get_cmap('jet'))
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('Temperature at Frame %04d' % frame_number, fontsize=20)
     ax.set_aspect(1.0)
+    cs.set_clim(vmin=0.0, vmax=t_max)
+    fig.colorbar(cs,ax=ax)
     plt.savefig('temp_frames_mesh/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
 
-def save_temp_frame_contour(frame_number):
+def save_temp_frame_contour(frame_number, t_max = 1.0):
     fig, ax = plt.subplots(figsize=(15,6))
     fig.subplots_adjust(top=0.9,right=0.9)
 
     cs = ax.contourf(x_2d,y_2d,temp[frame_number].reshape(ny,nx),levels=np.linspace(0, 1, 11),cmap=plt.cm.get_cmap('jet'))
-    cs.set_clim(0.0,1.0)
+    # cs.set_clim(0.0,1.0)
     ax.contour(cs, colors='k',linewidths=2.0)
-    cs.set_clim(vmin=0.0,vmax=1.0)
+    cs.set_clim(vmin=0.0,vmax=t_max)
     fig.colorbar(cs,ax=ax)
 
     ax.set_xlabel(r'$x$', fontsize=16)
@@ -126,29 +129,18 @@ def save_p_frame(frame_number):
 # start timer
 t0 = time.time()
 # Number of frames
-# iMax = len(p)
-iMax = 3
+iMax = len(p)
 # Status
 print(f'Processing {iMax} frames...')
 for i in range(iMax):
-    '''
-    # load variables step by step
-    no need to load the varaibles outside the function
-    the function now takes care of loading the variables step by step
-    p_i = p[i].reshape(ny,nx)
-    temp_i = temp[i].reshape(ny,nx)
-    ux_i = ux[i].reshape(ny,nx)
-    uy_i = uy[i].reshape(ny,nx)
-    '''
-
+    # Set maximum temperature for temp frames
+    t_max = 0.25
     # Save the frames
-    save_temp_frame_mesh(i)
-    save_temp_frame_contour(i)
+    save_temp_frame_mesh(i, t_max)
+    save_temp_frame_contour(i, t_max)
     save_ux_frame(i)
     save_uy_frame(i)
     save_p_frame(i)
-    # color the temp by velocity or 
-    # color the streamline by velocity_magnitude/temp
     # compute elapsed time
     et = time.time() - t0
     # Compute ETA
