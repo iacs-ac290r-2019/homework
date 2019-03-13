@@ -10,6 +10,7 @@ crash if dealing with reasonable size of resolution
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
+import time
 import netCDF4
 
 # set all contour lines to be solid
@@ -20,7 +21,7 @@ ny = 1025 # subject to change 1025
 nx = 2049 # subject to change 2049
 
 # open the Exodus file
-path = 'case1.exo' # subject to change on Odyssey
+path = '../data/case1.exo' # subject to change on Odyssey
 ray = netCDF4.Dataset(path)
 
 # mapping between NetCDF variable names and actual meaning
@@ -43,9 +44,9 @@ t_1d = np.reshape(t[:], [1, niters])
 def save_temp_frame(frame_number):
     fig = plt.figure(figsize=[15,15])
     ax = fig.add_subplot(111)
-    ax.pcolormesh(x_2d,y_2d,temp_i,cmap=plt.cm.get_cmap('jet'))
+    ax.pcolormesh(x_2d, y_2d, temp_i, cmap=plt.cm.get_cmap('jet'))
     # cs = ax.contourf(x_2d,y_2d,temp_i,100,cmap=plt.cm.get_cmap('jet'))
-    # cs2 = ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    # ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('Temperature at Frame %i' % i, fontsize=20)
@@ -59,7 +60,7 @@ def save_ux_frame(frame_number):
     fig = plt.figure(figsize=[15,15])
     ax = fig.add_subplot(111)
     cs = ax.contourf(x_2d,y_2d,ux_i,100,cmap=plt.cm.get_cmap('jet'))
-    cs2 = ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('U_x at Frame %i' % i, fontsize=20)
@@ -73,7 +74,7 @@ def save_uy_frame(frame_number):
     fig = plt.figure(figsize=[15,15])
     ax = fig.add_subplot(111)
     cs = ax.contourf(x_2d,y_2d,uy_i,100,cmap=plt.cm.get_cmap('jet'))
-    cs2 = ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('U_y at Frame %i' % i, fontsize=20)
@@ -86,7 +87,7 @@ def save_p_frame(frame_number):
     fig = plt.figure(figsize=[15,15])
     ax = fig.add_subplot(111)
     cs = ax.contourf(x_2d,y_2d,p_i,100,cmap=plt.cm.get_cmap('jet'))
-    cs2 = ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
+    ax.contour(cs, levels=cs.levels[::10], colors='k',linewidths=2.0)
     ax.set_xlabel(r'$x$', fontsize=16)
     ax.set_ylabel(r'$y$', fontsize=16)
     ax.set_title('Pressure at Frame %i' % i, fontsize=20)
@@ -95,17 +96,29 @@ def save_p_frame(frame_number):
     plt.close('all')
     # plt.show()
 
-# save all temperature fields
-for i in range(0,50):
+# save all fields
+# start timer
+t0 = time.time()
+# Number of frames
+iMax = len(p)
+# Status
+print(f'Processing {iMax} frames...')
+for i in range(iMax):
     # load variables step by step
-    # p_i = p[i].reshape(ny,nx)
-    # temp_i = temp[i].reshape(ny,nx)
+    p_i = p[i].reshape(ny,nx)
+    temp_i = temp[i].reshape(ny,nx)
     ux_i = ux[i].reshape(ny,nx)
-    # uy_i = uy[i].reshape(ny,nx)
-    # save_temp_frame(i)
+    uy_i = uy[i].reshape(ny,nx)
+    # Save the frames
+    save_temp_frame(i)
     save_ux_frame(i)
-#     save_uy_frame(i)
-#     save_p_frame(i)
-# color the temp by velocity or 
-# color the streamline by velocity_magnitude/temp
-    print("Figures saved at Frame %04d" % i)
+    save_uy_frame(i)
+    save_p_frame(i)
+    # color the temp by velocity or 
+    # color the streamline by velocity_magnitude/temp
+    # compute elapsed time
+    et = time.time() - t0
+    # Compute ETA
+    pace = (i+1) / et
+    eta = (iMax - i - 1) / pace
+    print(f"Figures saved at Frame {i:04d}; elapsed {int(et)} sec; ETA {int(eta)} sec.")

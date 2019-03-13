@@ -11,6 +11,10 @@
 # Large exodus data files
 *.exo
 
+# Movie frames and movies
+*.png
+*.mp4
+
 # Doxygen build directories
 hw1/html
 hw1/latex
