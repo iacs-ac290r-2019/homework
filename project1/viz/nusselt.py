@@ -22,6 +22,7 @@ nx = 2049
 # parameters of the simulation
 H = 2.0 # height of the channel
 k = 1.0 # thermal diffusivity kappa
+dT = 1.0 # temperature difference at steady state 
 
 # mapping between NetCDF variable names and actual meaning
 # p = ray.variables['vals_nod_var1']
@@ -49,7 +50,7 @@ def calc_nusselt():
         uT = uy_t * temp_t
         # the change in temperature dT from the bottom to the top
         # set dT to a minimum of 1E-6 to avoid divide by zero at simulation start
-        dT = max(temp_t[0, 0] - temp_t[ny-1, 0], 1E-6)
+        # dT = max(temp_t[0, 0] - temp_t[ny-1, 0], 1E-6)
         # the nusselt number is Nu = 1 + H / k dT * <vT>
         Nu[t] = 1.0 + H / (k * dT) + np.mean(uT)
         # Save the time
@@ -58,14 +59,15 @@ def calc_nusselt():
     return Nu, tt
 
 # Calculate the nusselt number
-# Nu, tt = calc_nusselt()
+Nu, tt = calc_nusselt()
 
 # Plot a chart of the Nusselt number
 fig, ax = plt.subplots(figsize=[12,12])
 ax.set_title('Nusselt Number for RBC Case 1')
 ax.set_xlabel('Time t')
 ax.set_ylabel('Nusselt Number')
-ax.set_ylim(0, 10)
+ax.set_xlim(0.0, 0.25)
+ax.set_ylim(2.0, 4.0)
 ax.plot(tt, Nu, color='r')
 ax.grid()
 fig.savefig('frames_misc/nusselt.png', bbox_inches='tight')
