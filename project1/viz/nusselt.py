@@ -62,7 +62,7 @@ def calc_nusselt():
 Nu, tt = calc_nusselt()
 
 # Plot a chart of the Nusselt number
-fig, ax = plt.subplots(figsize=[12,12])
+fig, ax = plt.subplots(figsize=[12,6])
 ax.set_title('Nusselt Number for RBC Case 1')
 ax.set_xlabel('Time t')
 ax.set_ylabel('Nusselt Number')

@@ -22,8 +22,8 @@ ny = 1025 # subject to change 1025
 nx = 2049 # subject to change 2049
 
 # open the Exodus file
-# path = '../data/case1.exo' # subject to change on Odyssey
-path = 'case1.exo'
+path = '../data/case1.exo' # subject to change on Odyssey
+# path = 'case1.exo'
 ray = netCDF4.Dataset(path)
 
 # mapping between NetCDF variable names and actual meaning
@@ -175,13 +175,13 @@ for i in range(iMax):
     # Set maximum temperature for temp frames
     t_max = 0.25
     # Save the frames
-    save_temp_frame_mesh(i, t_max)
-    save_temp_frame_contour(i, t_max)
-    save_ux_frame(i)
-    save_uy_frame(i)
-    save_p_frame(i)
+    # save_temp_frame_mesh(i, t_max)
+    # save_temp_frame_contour(i, t_max)
+    # save_ux_frame(i)
+    # save_uy_frame(i)
+    # save_p_frame(i)
     save_streamline_frame(i)
-    save_streamline_frame(i, regular=False)
+    # save_streamline_frame(i, regular=False)
     # compute elapsed time
     et = time.time() - t0
     # Compute ETA
