@@ -22,7 +22,8 @@ ny = 1025 # subject to change 1025
 nx = 2049 # subject to change 2049
 
 # open the Exodus file
-path = '../data/case1.exo' # subject to change on Odyssey
+# path = '../data/case1.exo' # subject to change on Odyssey
+path = 'case1.exo'
 ray = netCDF4.Dataset(path)
 
 # mapping between NetCDF variable names and actual meaning
@@ -109,6 +110,7 @@ def save_uy_frame(frame_number):
     plt.close('all')
     # plt.show()
 
+# function that save the pressure profile at a frame
 def save_p_frame(frame_number):
     fig, ax = plt.subplots(figsize=(15,6))
     fig.subplots_adjust(top=0.9,right=0.9)
@@ -124,6 +126,43 @@ def save_p_frame(frame_number):
     plt.savefig('p_frames/frame%04d.png' % frame_number)
     plt.close('all')
     # plt.show()
+
+# function that save the velocity field and the streamline in two ways
+# regular == True is the pcolormesh plot of velocity magnitude overlayed with streamline
+# regular == False is the streamline plot whose width represents velocity maginitude and
+# color represents temperature
+def save_streamline_frame(frame_number, regular = True):
+    fig, ax = plt.subplots(figsize=(15,6))
+    fig.subplots_adjust(top=0.9,right=0.9)
+    ax.set_xlabel(r'$x$', fontsize=16)
+    ax.set_ylabel(r'$y$', fontsize=16)
+    ax.set_aspect(1.0)
+    # load variables
+    Y, X = np.mgrid[0:1:1025j, 0:2:2049j]
+    temp_i = temp[frame_number].reshape(ny,nx)
+    ux_i = ux[frame_number].reshape(ny,nx)
+    uy_i = uy[frame_number].reshape(ny,nx)
+    speed_i = np.sqrt(ux_i*ux_i + uy_i*uy_i)
+
+    if regular:
+        # option 1: plot regular streamlines over velocity magnitude field
+        ax.set_title('Velocity Field and Streamlines at Frame %04d' % frame_number, fontsize=20)
+        strm = ax.streamplot(X, Y, ux_i, uy_i, density=1.75, color='k', linewidth=2.0)
+        cs = ax.pcolormesh(x_2d, y_2d, speed_i, cmap=plt.cm.get_cmap('jet'))
+        cs.set_clim(vmin=0.0, vmax=speed_i.max())
+        fig.colorbar(cs,ax=ax)
+        plt.savefig('streamline_frames/reg_frame%04d.png' % frame_number)
+        # plt.show()
+    else:
+        # option 2: plot streamlines proportional to velocity magnitude and temperature
+        # set width proportional to velocity magnitude
+        ax.set_title('Streamlines and Temperature Profile at Frame %04d' % frame_number, fontsize=20)
+        lw = 7*speed_i / speed_i.max() + 0.5
+        strm = ax.streamplot(X, Y, ux_i, uy_i, density=1.75, color=temp_i, linewidth=lw, cmap='jet')
+        fig.colorbar(strm.lines)
+        plt.savefig('streamline_frames/prop_frame%04d.png' % frame_number)
+        # plt.show()
+    plt.close('all')
 
 # save all fields
 # start timer
@@ -141,6 +180,8 @@ for i in range(iMax):
     save_ux_frame(i)
     save_uy_frame(i)
     save_p_frame(i)
+    save_streamline_frame(i)
+    save_streamline_frame(i, regular=False)
     # compute elapsed time
     et = time.time() - t0
     # Compute ETA
