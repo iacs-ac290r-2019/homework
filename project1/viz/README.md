@@ -5,18 +5,6 @@ For testing the Python visualization code on the local machine, you need to put 
 pip install netcdf4
 
 
-### create directories to save each fields by frame
-mkdir temp_frames
-
-mkdir ux_frames
-
-mkdir uy_frames
-
-mkdir p_frames
-
-mkdir streamline_frames
-
-
 ### load the .exo file
 test.exo is the small one
 
