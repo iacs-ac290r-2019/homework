@@ -12,6 +12,7 @@
 
 % MSE Make margins a bit smaller
 \usepackage[margin=0.75in]{geometry}
+\usepackage[font=footnotesize]{caption}
 
 % MSE set graphics path
 \graphicspath{{figs/}}
@@ -75,13 +76,13 @@ Some of the more prominent ones include:
 \item\href{https://en.wikipedia.org/wiki/Stellar_evolution}{Stellar evolution}:
 The gas at the center of a star is hotter than the gas at the outside, and a spherical RBC flow develops
 \item\href{https://en.wikipedia.org/wiki/Plate_tectonics}{Plate tectonics}:
-The center of the earth hot, with a layer of magma on top and a cool crust.  
+The hot center of the earth, with a layer of magma on top and a cool crust.  
 Over geologic time scales, the earth's mantle behaves like a fluid, and plate tectonics is an instance of RBC.
 \item{Weather systems}: Warm air rises in the earth's atmosphere and RBC drives weather processes. 
 A concrete example is a \href{https://en.wikipedia.org/wiki/Mesoscale_convective_system}{mesoscale convective system}.
 \end{itemize}
 
-Our goals in this project are two-fold.  
+Our goals in this project are twofold.  
 We would like to learn some basic precepts of fluid dynamics and gain a working knowledge of RBC.
 We acknowledge however that fluid dynamics is far too large and complicated a field for us 
 to gain a deep understanding in such a short time.
@@ -196,7 +197,7 @@ These building blocks enable Drekar to simulate a wide variety of PDEs
 using the finite element method, and to perform these scales efficiently at scale.
 Drekar handles continuous, discontinuous and stabilized finite elements.
 The flexibility and wide range of the C++ classes in Drekar allow it to simulate
-mixed-integration finite element bases include nodal, edge, face and volume elements.
+mixed-integration finite element bases including nodal, edge, face, and volume elements.
 This allows a wide range of problems to be described.
 The breadth of elements are particularly useful when enforcing complex boundary conditions.
 Drekar also has the flexibility of simulating multiple physics regimes, called blocks, in one system.
@@ -267,7 +268,7 @@ We can set crucial information like boundary counditions, time steps, solvers, a
 The XML file contains two other important pieces of information: the path to the \textit{.exo} output, 
 as well as the pamgen input for the grid specification. 
 The exodus file is yet another creation of Sandia labs, which aims at storing and accessing finite element analyses.\cite{exo} 
-It is important to note that if Drekar is running on $n$ cores in parallel, $n$ exodus files are created, 
+It is important to note that if Drekar is running on $n$ cores in parallel, $n$ exodus files are created 
 and updated over the course of the simulation. 
 Once the simulation is over, it might be useful to combine all these partitioned files into a single exodus files: 
 to do that, we use the epu CLI application. However, that last step is not necessary if we only want to visualize
@@ -456,41 +457,85 @@ is the \href{https://youtu.be/KJptFoJbmuM}{movie}.
 
 \newpage
 % temperature image
-\begin{center}
-\hspace*{-1.0in}
-\includegraphics[width=1.40\textwidth]{temperature.png}
-\end{center}
-
-% pressure image
-\begin{center}
-\hspace*{-1.0in}
-\includegraphics[width=1.40\textwidth]{pressure.png}
-\end{center}
-
-% velocity x image
-\begin{center}
-\hspace*{-1.0in}
-\includegraphics[width=1.40\textwidth]{velocity_x.png}
-\end{center}
-
-% velocity y image
-\begin{center}
-\hspace*{-1.0in}
-\includegraphics[width=1.40\textwidth]{velocity_y.png}
-\end{center}
-
+\subsection{Temperature Field}
+Temperature field presents direct visualizations of the temperature distribution in the flow, and illustrates the motion of the flow. Figure 1 is the temperature field at $t=0.189$, where cold colors represent the low and the warm colors represent the high temperature. It also shows some nice swirls and eddies in the flow. As time elapsed, high temperature diffuses in the flow, while the bottom still preserves higher temperature, which is in accordance to the initial temperature condition. For better visualization, we cap the maximum value on the colorbar 
+at $0.25$, and use both \texttt{pcolormesh} and \texttt{contourf} approach.
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{temperature.png}
+\caption{Mesh plot of the temperature field at $t=0.189$.}
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{temperature_contour.png}
+\caption{Contour plot of the temperature field at $t=0.189$.}
+\end{figure}
 \newpage
-% streamline image
-\begin{center}
-\hspace*{-1.0in}
-\includegraphics[width=1.40\textwidth]{streamline.png}
-\end{center}
 
 % Nusselt number
-\begin{center}
-\includegraphics[width=0.90\textwidth]{nusselt.png}
-\end{center}
-\textbf{visualization of vorticity field if possible}
+\subsection{Nusselt Number}
+With the visualizations of the temperature field at hand, it is nature to study the quantitative behavior of the heat transport. The Nusselt Number is the primary dignostic quantity used to measure vertical heat transport.  It is a dimensionless quantity that indicates the ratio of total heat transport to heat transport from conduction alone.  A value of 1.0 indicates heat transport due only to conduction.
+The range of values below between 3 and 4 indicates a flow with quite
+a lot of heat transport due to hotter fluid rising.  
+This is as expected in a flow with such a high Rayleigh number.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.5\textwidth]{nusselt.png}
+\caption{Nusselt number from $t=0$ to $t=0.224$.}
+\end{figure}
+
+% pressure image
+\subsection{Pressure Field}
+\textbf{Some words on the pressure field.}
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{pressure.png}
+\caption{Contour plot of the pressure field at $t=0.205$.}
+\end{figure}
+\newpage
+
+% velocity x image
+% velocity y image
+\subsection{Velocity Field}
+Since the velocity field is a vector field, we visualize the $x$ and $y$ components independently. 
+
+\textbf{Some explanation on the color bar.}
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{velocity_x.png}
+\caption{Contour plot of the velocity field in $x$ component at $t=0.112$.}
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{velocity_y.png}
+\caption{Contour plot of the velocity field in $y$ component at $t=0.112$.}
+\end{figure}
+\newpage
+
+% streamline image
+\subsection{Streamline Field}
+Another visualization to understand the velocity field is to plot the streamlines, which show the motion of the flow. We present two ways to plot the streamlines: First we overlay the velocity magnitude field with the streamline; second we color the streamlines with the temperature, and change its width to represent the velocity magnitude, which confers information about the flow temperature and velocity.
+
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{streamline_regular.png}
+\caption{Contour plot of the velocity field in $x$ component at $t=0.112$.}
+\hspace*{-0.25in}
+\includegraphics[width=1.2\textwidth]{streamline.png}
+\caption{Contour plot of the velocity field in $y$ component at $t=0.112$.}
+\end{figure}
+\newpage
+
+\subsection{Schlieren Flow Visualization}
+Schlieren flow visualization enhances the features and the structures of eddies and swirls of the flow, which is complementary to the previous fields visualizations. Typically Schlieren images are rendered in grey-scale for comparisons with experimental data.  
+\begin{figure}[h!]
+\centering
+% \hspace*{-0.25in}
+\includegraphics[width=0.7\textwidth]{schlierin_grey.png}
+\caption{Contour plot of the velocity field in $x$ component at $t=0.112$.}
+\end{figure}
+
 
 \newpage
 \section{Conclusions and Future Work}
@@ -512,7 +557,9 @@ One obvious piece of future work is to get to the bottom of the performance slow
 and out of memory error that brought simulation case 2 down.
 Once the problem is repaired, we would like the opportunity to run the job to completion.
 We understand that may not be possible due to constraints on computing resources
-but would like to try.
+but would like to try. 
+
+For visualization it would be cool to have several trace particles, and plot their trajectories along the flow. In addition, painterly rendering in computer graphics can be used to render each frame, which would truly create a painterly like water flow, like Van Gogh or Hokusai.
 
 %% bibliography
 
@@ -522,6 +569,9 @@ Schoof, L. A., \& Yarberry, V. R. (1994). EXODUS II: a finite element data model
 
 \bibitem{pam}
 DRAKE, R., FOUCAR, J., HENSINGER, D., WONG, M., BUDGE, K., \& GARDINER, T. (2008). Pamgen (No. PAMGEN; 002393WKSTN00). Sandia National Laboratories.
+
+\bibitem{colorpalette}
+Paintings Color Palettes: \url{https://designshack.net/articles/inspiration/10http:/designshack.net/articles/inspiration/10-free-color-palettes-from-10-famous-paintings/}
 
 \end{thebibliography}
 
