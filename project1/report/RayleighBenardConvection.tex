@@ -255,12 +255,12 @@ import it to the ParaView GUI, and then fiddle with the vast array of visualizat
 That strategy could not scale with realistic simulation output, which can be on the terabyte scale, 
 but it was good enough to get used to the tools and to prototype.
 
-As for running Drekar, three input files were particularly important: \textit{case1.sh}, \textit{case1.pam}, and \textit{case1.xml}. 
+As for running Drekar, three input files were particularly important: \textit{case512.sh}, \textit{case512.pam}, and \textit{case512.xml}. 
 Because the simulation is compute-heavy and takes a long time to run, it was not reasonable to run it on 
 either login nodes, or via an interactive session. 
-Therefore, we wrote \textit{case1.sh}, which defines the various SLURM flags, and parameters for the simulation
-to be run as a batch job on Odyssey using \textit{sbatch case1.sh}. 
-In the end, this batch job runs the Drekar executable with \textit{case1.xml} as input. 
+Therefore, we wrote \textit{case51.sh}, which defines the various SLURM flags, and parameters for the simulation
+to be run as a batch job on Odyssey using \textit{sbatch case512.sh}. 
+In the end, this batch job runs the Drekar executable with \textit{case512.xml} as input. 
 The XML file describes pretty much all the information about the desired environment in order for Drekar to run properly. 
 Indeed, Drekar by itself (including Trilinos) is a gigantic optimized toolkit, but it is not compiled with a series of specific actions to do. 
 Fortunately, the behaviour we want to emulate can be written in an XML or YAML file, which is then dynamically parsed by Drekar afterwards. 
@@ -273,9 +273,18 @@ and updated over the course of the simulation.
 Once the simulation is over, it might be useful to combine all these partitioned files into a single exodus files: 
 to do that, we use the epu CLI application. However, that last step is not necessary if we only want to visualize
  the analyses using ParaView, as it can handle both having the partitioned files, or the combined exodus output.  
-This brings us to the last file: \textit{case1.pam}.  
+This brings us to the last file: \textit{case512.pam}.  
 Pamgen is a technology which enables us to easily define the mesh used during our finite element analysis.\cite{pam} 
 We could have used other tools to generate such mesh, but Pamgen is a popular approach which we were presented in the context of this class.
+
+Finally, we want to add a note on the code structure. Over the last two weeks, we ran multiple simulations; at first tests, then a run on 512 cores, and one on 1024 cores. Runs were executed in the same directory at `/n/scratchlfs/ac290r/case1', which rapidly got out of hand. As input, exodus, and output files multiplied and got intertwined, confusion understandably surfaced. To fix the situation, the code base was refactored. The whole `case1' directory was copied over, in order to keep a legacy version during refactoring; the two runs were separated into two separate directories inside a common `project1' folder; files were expressively renamed to their corresponding runs (rather than `case1' and `real'); `ParallelDatabase', containing all the generated exodus files, was simply renamed `exo'; finally, unused files were removed.
+
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=\textwidth]{refactor.png}
+\caption{Refactored Tree.}
+\end{figure}
 
 
 \section{Overview of Numerical Methods Used}
@@ -309,7 +318,7 @@ example, we will end up with a linear equation to solve at each time step.
 For a more complex system, we will often need to solve a nonlinear equation
 to advance the system from one time step to the next.
 Implicit solvers (including an IMEX solver) will often require the solution of a nonlinear equation.
-To make this a bit more concrete, consider two different ways discretize one
+To make this a bit more concrete, consider the following two ways to discretize one
 step of the 1D Poisson equation in time:
 \begin{align}
 \frac{u^{n+1}_{j} - u^{n}_{j}}{k} &= \frac{u^{n}_{j+1} - 2u^{n}_{j} + u^{n}_{j+1} }{h^2} \\
@@ -340,14 +349,14 @@ Nonlinear solvers are a mature field in applied mathematics with their own rich 
 We learned during the guest lecture of a few of the advanced techniques 
 used in Trilinos (NOX) for solving nonlinear equations:
 \begin{itemize}
-\item{\textbf(line search)} rather than applying the full $\Delta x$ implied by Newton's method,
+\item{\textbf{line search}}: rather than applying the full $\Delta x$ implied by Newton's method,
 perform a line search in that direction; often the step size chosen will be smaller
-\item{\textbf{trust region}} by comparing the predicted and actual function values,
+\item{\textbf{trust region}}: by comparing the predicted and actual function values,
 maintain an estimate of how large a region the derivative approximation is valid
 for.  When taking a step, limit it to this trust region.
-\item{\textbf{second derivative methods}} build up an estimate of the second derivative as well
+\item{\textbf{second derivative methods}}: build up an estimate of the second derivative as well
 as the first derivative and use it for a sharper estimate of the step to take
-\item{\textbf{homotopy methods}} identify a parameter in the equation that governs its behavior.
+\item{\textbf{homotopy methods}}: identify a parameter in the equation that governs its behavior.
 It should allow for a simpler solution when the value changes 
 (e.g. solving RBC is easier when the Rayleigh number is lower).
 Solve the system at an easy setting, then use that solution as the initial guess
@@ -370,7 +379,7 @@ This can be passed in either XML format (the old technique) or YML (the new tech
 We were provided with a template XML file which we then modified to incorporate the 
 specific parameter settings.
 We made two simulation runs, \textbf{case 1} (on 512 cores for about a day)
-and \textbf{case 2} (on 1024 for about 5 days).  
+and \textbf{case 2} (on 1024 for about 4 days).  
 There was a slight change in parameter values explained below.
 
 We generated a mesh using a program called Pamgen.  Here are the key parameters for the mesh (spatial layout):
@@ -413,7 +422,7 @@ On our initial run with 512 cores (case 1), the temperature starts with a trigon
 which is the analytical solution at steady state on an infinite plane first worked out by Rayleigh. \\
 We observed that the solver had a difficult time ramping up under these conditions 
 due to the highly turbulent flow at $\textrm{Ra} = 10^{10}$.  
-For this reason we changed the initial conditions on our second run, case 2. 
+
 \item{\textbf{No slip boundary condition}} $U_x = 0$, $U_y = 0$ 
 on the top (surface\_4) and bottom (surface\_2).
 \item{\textbf{Applied temperature gradient}} $T=0$ at the top, $T=1$ at the bottom; therefore $\Delta T = 1$.
@@ -435,20 +444,20 @@ using a reference density of 1.0 and a reference temperature of 0.5, the mean fo
 \section{Results}
 We made two simulation runs:
 \begin{itemize}
-\item{\textbf{case 1}} Our first run was intended to run on 1024 CPU cores but only ran on 512 cores due to a hardware fault.
+\item{\textbf{case 1}}: our first run was intended to run on 1024 CPU cores but only ran on 512 cores due to a hardware fault.
 We terminated it and restarted it when the problem was diagnosed and corrected.  We ended up with 22.7 GB of output
 encompassing about 0.22 of simulation time of 5.0 desired.
-\item{\textbf{case 2}} We ran a second batch, starting from scratch rather than re-starting case 1.
+\item{\textbf{case 2}}: we ran a second batch, starting from scratch rather than re-starting case 1.
 This was run on the full 1024 cores.  However, the run terminated early when it crashed due to running out of memory.
 Diagnostics reveal that it also steadily slowed down during the simulation, ending up with only 0.77 time units.
 The output files appear to have become corrupted as a result of the crash and may be unusable.
 Based on the observed pattern of steadily deteriorating performance followed by an out of memory error,
-we suspect there may be a memory leak in Drekar that only manifested on our compilation when we ran
+we suspect there may be a memory leak in Drekar that only manifested when we ran
 the large job for an extended time.
 \end{itemize}
 
 We must admit to a measure of disappointment that our largest simulation run did not successfully complete.
-However if you try something and know the result ahead of time, 
+However, if you try something and know the result ahead of time, 
 what you're doing might be instructive but probably isn't science!
 
 On a more fun note, here are some visuals from the successful albeit short case 1 run.
@@ -473,20 +482,20 @@ at $0.25$, and use both \texttt{pcolormesh} and \texttt{contourf} approach.
 
 % Nusselt number
 \subsection{Nusselt Number}
-With the visualizations of the temperature field at hand, it is nature to study the quantitative behavior of the heat transport. The Nusselt Number is the primary dignostic quantity used to measure vertical heat transport.  It is a dimensionless quantity that indicates the ratio of total heat transport to heat transport from conduction alone.  A value of 1.0 indicates heat transport due only to conduction.
+With the visualizations of the temperature field at hand, it is natural to study the quantitative behavior of the heat transport. The Nusselt Number is the primary dignostic quantity used to measure vertical heat transport.  It is a dimensionless quantity that indicates the ratio of total heat transport to heat transport from conduction alone.  A value of 1.0 indicates heat transport due only to conduction.
 The range of values below between 3 and 4 indicates a flow with quite
 a lot of heat transport due to hotter fluid rising.  
 This is as expected in a flow with such a high Rayleigh number.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.5\textwidth]{nusselt.png}
+\includegraphics[width=0.6\textwidth]{nusselt.png}
 \caption{Nusselt number from $t=0$ to $t=0.224$.}
 \end{figure}
 
 % pressure image
 \subsection{Pressure Field}
-\textbf{Some words on the pressure field.}
+The pressure field is in accordance with the temperature field, where the higher temperature has higher pressure and lower temperature had lower pressure.
 \begin{figure}[h!]
 \centering
 \hspace*{-0.25in}
@@ -498,9 +507,8 @@ This is as expected in a flow with such a high Rayleigh number.
 % velocity x image
 % velocity y image
 \subsection{Velocity Field}
-Since the velocity field is a vector field, we visualize the $x$ and $y$ components independently. 
+Since the velocity field is a vector field, we visualize the $x$ and $y$ components independently. The cold (negative) color in the color bar represent the leftward movement, while the warm (positive) ones represent rightward movement. Figure 5 and 6 suggest some swirling movements in the flow.
 
-\textbf{Some explanation on the color bar.}
 \begin{figure}[h!]
 \centering
 \hspace*{-0.25in}
@@ -514,7 +522,7 @@ Since the velocity field is a vector field, we visualize the $x$ and $y$ compone
 
 % streamline image
 \subsection{Streamline Field}
-Another visualization to understand the velocity field is to plot the streamlines, which show the motion of the flow. We present two ways to plot the streamlines: First we overlay the velocity magnitude field with the streamline; second we color the streamlines with the temperature, and change its width to represent the velocity magnitude, which confers information about the flow temperature and velocity.
+Another visualization to understand the velocity field is to plot the streamlines, which show the motion of the flow. We present two ways to plot the streamlines: First, we overlay the velocity magnitude field with the streamline; second, we color the streamlines with the temperature, and change its width to represent the velocity magnitude, which confers information about the flow temperature and velocity.
 
 \begin{figure}[h!]
 \centering
@@ -528,14 +536,37 @@ Another visualization to understand the velocity field is to plot the streamline
 \newpage
 
 \subsection{Schlieren Flow Visualization}
-Schlieren flow visualization enhances the features and the structures of eddies and swirls of the flow, which is complementary to the previous fields visualizations. Typically Schlieren images are rendered in grey-scale for comparisons with experimental data.  
+Schlieren flow visualization enhances the features of the flow. Typically Schlieren images are rendered in gray-scale for comparisons with experimental data. In the project statement the Schlieren is defined to be the exponential of the absolute value of the temperature gradient, which would give complementary information about the flow in addition to the temperature field.
+\begin{gather}
+    \textit{Sch} = \exp \left( -k \dfrac{|\nabla T|}{\max{|\nabla T|}} \right)
+\end{gather}
+The actual Schlieren images are generated in \texttt{Paraview}, and for better visualizations, the $\max{|\nabla T|}$ in the denominator is set to 1. Figure 9 shows a standared gray-scale Schlieren image at $t=0.189$, and the swirling structures match the temperature flow in Figure 1 and 2.
 \begin{figure}[h!]
 \centering
 % \hspace*{-0.25in}
-\includegraphics[width=0.7\textwidth]{schlierin_grey.png}
-\caption{Contour plot of the velocity field in $x$ component at $t=0.112$.}
+\includegraphics[width=0.7\textwidth]{schlieren_grey.png}
+\caption{Schlieren image of the temperature field at $t=0.189$.}
 \end{figure}
 
+We also modify the color maps of Schlieren images to generate some interesting images. Since we are simulating fluids, we reference the color palettes of three famous painting which involve water, or flowing strokes: Hokusai's \textit{The Great Wave}, Vincent Van Gogh's \textit{Starry Night} and Edvard Munch's \textit{The Scream}.
+\begin{figure}[h!]
+\centering
+% \hspace*{-0.25in}
+\includegraphics[width=0.3\textwidth]{hokusai.jpg}
+\includegraphics[width=0.3\textwidth]{vangogh.jpg}
+\includegraphics[width=0.3\textwidth]{munch.jpg}
+\caption{Color palettes from the paintings of Hokusai, Van Gogh and Munch.}
+\end{figure}
+
+Based on the color palettes, we generate colored Schlieren images of this Rayleigh-B\'enard Convection simulation, which resembles well with the flowing paint strokes of an actual painting. 
+\begin{figure}[h!]
+\centering
+% \hspace*{-0.25in}
+\includegraphics[width=0.7\textwidth]{schlieren_hokusai.png}
+\includegraphics[width=0.7\textwidth]{schlieren_vangogh.png}
+\includegraphics[width=0.7\textwidth]{schlieren_munch.png}
+\caption{Schlieren images using the color palettes from the paintings of Hokusai, Van Gogh and Munch.}
+\end{figure}
 
 \newpage
 \section{Conclusions and Future Work}
@@ -576,3 +607,4 @@ Paintings Color Palettes: \url{https://designshack.net/articles/inspiration/10ht
 \end{thebibliography}
 
 \end{document}
+
