@@ -89,13 +89,13 @@ __global__ void computeNextJacobiStep(int nx, int ny, double pref, double* _u, d
  * Step V: Launch the GPU kernel to calculate the error at each grid point    *
  *         here.                                                              *
  *****************************************************************************/
-__global__ void computeJacobiError(int nx, int ny, double D, double t, double* _u, double* _error) {
+__global__ void computeJacobiError(int nx, int ny, double dx, double dy, double D, double t, double* _u, double* _error) {
 	int ti = blockDim.x * blockIdx.x + threadIdx.x;
 	int tj = blockDim.y * blockIdx.y + threadIdx.y;
 
 	if (ti < (nx-1) && ti > 0 && tj < (ny-1) && tj > 0) {
 		double discretizedValue = _u[tj*nx + ti];
-		double analyticalValue = sin(ti)*sin(tj)*exp(-2*D*t);
+		double analyticalValue = sin(dx * ti)*sin(dy * tj)*exp(-2*D*t);
 
 		_error[tj*nx + ti] = abs(discretizedValue - analyticalValue);
 	}
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 	double* u = (double*) malloc(nx*ny * sizeof(double));
 	for (int j = 0; j < ny; ++j) {
 		for (int i = 0; i < nx; ++i) {
-			u[j*nx + i] = sin(i) * sin(j); 
+			u[j*nx + i] = sin(i * dx) * sin(j * dy); 
 		}
 	}
 
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
      * Step V: Launch the GPU kernel to calculate the error at each grid point *
      *         here.                                                           *
      **************************************************************************/
-		computeJacobiError<<<numBlocks, dimBlocks>>>(nx, ny, D, time, _u, _error);
+		computeJacobiError<<<numBlocks, dimBlocks>>>(nx, ny, dx, dy, D, time, _u, _error);
 		cudaDeviceSynchronize();
 
     // Use thrust to do a parallel reduction on the error
