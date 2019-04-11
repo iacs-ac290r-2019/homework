@@ -1,0 +1,2 @@
+lbm.o: lbm.cc lbm.hh file.hh lattice.hh
+file.o: file.cc file.hh
