@@ -1,0 +1,18 @@
+css        parameter ( nx =128, ny =128, npop = 9)
+css        parameter ( nx =256, ny = 128, npop = 9)
+        parameter (nx =129, ny = 33, npop = 9)
+	character*5 fileout
+	logical iforce
+	common /iarrays/ iflag(nx,ny)
+
+	common /constants/ cs2,cs22,cssq,omega,fpois,den,visc,
+     .                     rho0,w0,w1,w2,w3
+        common /phys/   u0,uf,fom
+	common /farrays/ u(0:nx+1,0:ny+1),v(0:nx+1,0:ny+1),
+     .                   rho(0:nx+1,0:ny+1),
+     .                   feq(0:npop-1,0:nx+1,0:ny+1),
+     .                   f(0:npop-1,0:nx+1,0:ny+1)
+	common /count/ iobst,nout,ndiag,nsteps,nobst	
+	common /ile/   fileout
+	common /logic/ iforce
+	

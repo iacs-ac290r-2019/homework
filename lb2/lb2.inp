@@ -1,0 +1,10 @@
+20001         n. of steps
+1000          n. of profiles
+1000          n. of global diagnos
+2.1           omega
+T             force yes/no
+1.0 0.10 0.0  rho,u,v at t=0
+0.10          u forcing
+1             obstacle 0=free, 1=plate, 2=porous
+8             obstacle height
+IACS1         label 
