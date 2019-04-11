@@ -88,20 +88,23 @@ void lbm::init_poiseuille() {
 
 /** Initialize populations. */
 void lbm::init_pop() {
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
-			f[k].f0=f[k].feq0;
-			f[k].f1=f[k].feq1;
-			f[k].f2=f[k].feq2;
-			f[k].f3=f[k].feq3;
-			f[k].f4=f[k].feq4;
-			f[k].f5=f[k].feq5;
-			f[k].f6=f[k].feq6;
-			f[k].f7=f[k].feq7;
-			f[k].f8=f[k].feq8;
+			f[k].f0=z[k].feq0;
+			f[k].f1=z[k].feq1;
+			f[k].f2=z[k].feq2;
+			f[k].f3=z[k].feq3;
+			f[k].f4=z[k].feq4;
+			f[k].f5=z[k].feq5;
+			f[k].f6=z[k].feq6;
+			f[k].f7=z[k].feq7;
+			f[k].f8=z[k].feq8;
 		}
 	}
+	delete [] z;
 }
 
 /** Set the boundary condition.
@@ -117,44 +120,47 @@ void lbm::bc(int bctype) {
  *  West periodic, east periodic.
  *  North no-slip, south no-slip.  */
 void lbm::pbc() {
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	// West inlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb;
-		f[k].f1=f[k+nx].f1;
-		f[k].f5=f[k+nx].f5;
-		f[k].f8=f[k+nx].f8;
+		f[k].f1=z[k+nx].f1;
+		f[k].f5=z[k+nx].f5;
+		f[k].f8=z[k+nx].f8;
 		// printf("West inlet done\n");
 	}
 	// East outlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb+nx+1;
-		f[k].f3=f[k-nx].f3;
-		f[k].f6=f[k-nx].f6;
-		f[k].f7=f[k-nx].f7;
+		f[k].f3=z[k-nx].f3;
+		f[k].f6=z[k-nx].f6;
+		f[k].f7=z[k-nx].f7;
 		// printf("East outlet done\n");
 	}
 	// North solid
 	for(int i=1;i<=nx;i++) {
 		int k=nxb*(nyb-1)+i;
-		f[k].f4=f[k-nxb].f2;
-		f[k].f7=f[k-nxb-1].f5;
-		f[k].f8=f[k-nxb+1].f6;
+		f[k].f4=z[k-nxb].f2;
+		f[k].f7=z[k-nxb-1].f5;
+		f[k].f8=z[k-nxb+1].f6;
 	}
 	// South solid
 	for(int i=1;i<=nx;i++) {
 		int k=i;
-		f[k].f2=f[k+nxb].f4;
-		f[k].f5=f[k+nxb+1].f7;
-		f[k].f6=f[k+nxb-1].f8;
+		f[k].f2=z[k+nxb].f4;
+		f[k].f5=z[k+nxb+1].f7;
+		f[k].f6=z[k+nxb-1].f8;
 	}
 	// Northwest corner bounce-back
-	f[nxb*(nyb-1)].f8=f[nxb*(nyb-1)-nxb+1].f6;
+	f[nxb*(nyb-1)].f8=z[nxb*(nyb-1)-nxb+1].f6;
 	// Northeast corner bounce-back
-	f[nxb*nyb-1].f7=f[nxb*nyb-nxb-1-1].f5;
+	f[nxb*nyb-1].f7=z[nxb*nyb-nxb-1-1].f5;
 	// Southwest corner bounce-back
-	f[0].f5=f[nxb+1].f7;
+	f[0].f5=z[nxb+1].f7;
 	// Southeast corner bounce-back
-	f[nxb-1].f6=f[nxb+nxb-1-1].f8;
+	f[nxb-1].f6=z[nxb+nxb-1-1].f8;
+	delete [] z;
 }
 
 /** Mixed boundary condition.
@@ -204,19 +210,22 @@ void lbm::mbc() {
 
 /** Stream the populations along eight directions. */
 void lbm::stream() {
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
-			f[k].f1=f[k-1].f1;
-			f[k].f2=f[k-nxb].f2;
-			f[k].f3=f[k+1].f3;
-			f[k].f4=f[k+nxb].f4;
-			f[k].f5=f[k-nxb-1].f5;
-			f[k].f6=f[k-nxb+1].f6;
-			f[k].f7=f[k+nxb+1].f7;
-			f[k].f8=f[k+nxb-1].f8;
+			f[k].f1=z[k-1].f1;
+			f[k].f2=z[k-nxb].f2;
+			f[k].f3=z[k+1].f3;
+			f[k].f4=z[k+nxb].f4;
+			f[k].f5=z[k-nxb-1].f5;
+			f[k].f6=z[k-nxb+1].f6;
+			f[k].f7=z[k+nxb+1].f7;
+			f[k].f8=z[k+nxb-1].f8;
 		}
 	}
+	delete [] z;
 }
 
 /** Calculate hydro variables. */
@@ -240,12 +249,14 @@ void lbm::equilibrium() {
 	// Weights for D2Q9
 	const double w0=4./9,w1=1./9,w2=1./36;
 	// Traverse the simulation region with buffer to calculate f_eq
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
-			double rho=f[k].rho;
-			double u=f[k].ux;
-			double v=f[k].uy;
+			double rho=z[k].rho;
+			double u=z[k].ux;
+			double v=z[k].uy;
 			double ui=u/cs2;
 			double vi=v/cs2;
 			double u2=u*u/2/cs4;
@@ -264,25 +275,29 @@ void lbm::equilibrium() {
 			f[k].feq8=rho*w2*(1.+sumsq2+ui-vi-uv);
 		}
 	}
+	delete [] z;
 }
 
 /** Collide and calculate the population in the next timestep. */
 void lbm::collide() {
 	double omega=1./tau;
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
-			f[k].f0=(1.-omega)*f[k].f0+omega*f[k].feq0;
-			f[k].f1=(1.-omega)*f[k].f1+omega*f[k].feq1;
-			f[k].f2=(1.-omega)*f[k].f2+omega*f[k].feq2;
-			f[k].f3=(1.-omega)*f[k].f3+omega*f[k].feq3;
-			f[k].f4=(1.-omega)*f[k].f4+omega*f[k].feq4;
-			f[k].f5=(1.-omega)*f[k].f5+omega*f[k].feq5;
-			f[k].f6=(1.-omega)*f[k].f6+omega*f[k].feq6;
-			f[k].f7=(1.-omega)*f[k].f7+omega*f[k].feq7;
-			f[k].f8=(1.-omega)*f[k].f8+omega*f[k].feq8;
+			f[k].f0=(1.-omega)*z[k].f0+omega*z[k].feq0;
+			f[k].f1=(1.-omega)*z[k].f1+omega*z[k].feq1;
+			f[k].f2=(1.-omega)*z[k].f2+omega*z[k].feq2;
+			f[k].f3=(1.-omega)*z[k].f3+omega*z[k].feq3;
+			f[k].f4=(1.-omega)*z[k].f4+omega*z[k].feq4;
+			f[k].f5=(1.-omega)*z[k].f5+omega*z[k].feq5;
+			f[k].f6=(1.-omega)*z[k].f6+omega*z[k].feq6;
+			f[k].f7=(1.-omega)*z[k].f7+omega*z[k].feq7;
+			f[k].f8=(1.-omega)*z[k].f8+omega*z[k].feq8;
 		}
 	}
+	delete [] z;
 }
 
 /** Add forcing. */
@@ -291,16 +306,18 @@ void lbm::force(double forcetype) {
 	const double cs2=1./3;
 	// Weights for D2Q9
 	const double w1=1./9,w2=1./36;
+	lattice *z=new lattice[nxb*nyb];
+    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
 			double rho=f[k].rho;
-			f[k].f1=f[k].f1+w1*forcetype/cs2*rho;
-			f[k].f5=f[k].f5+w2*forcetype/cs2*rho;
-			f[k].f8=f[k].f8+w2*forcetype/cs2*rho;
-			f[k].f3=f[k].f3-w1*forcetype/cs2*rho;
-			f[k].f6=f[k].f6-w2*forcetype/cs2*rho;
-			f[k].f7=f[k].f7-w2*forcetype/cs2*rho;
+			f[k].f1=z[k].f1+w1*forcetype/cs2*rho;
+			f[k].f5=z[k].f5+w2*forcetype/cs2*rho;
+			f[k].f8=z[k].f8+w2*forcetype/cs2*rho;
+			f[k].f3=z[k].f3-w1*forcetype/cs2*rho;
+			f[k].f6=z[k].f6-w2*forcetype/cs2*rho;
+			f[k].f7=z[k].f7-w2*forcetype/cs2*rho;
 			// f[k].f1=f[k].f1+forcetype;
 			// f[k].f5=f[k].f5+forcetype;
 			// f[k].f8=f[k].f8+forcetype;
@@ -309,6 +326,7 @@ void lbm::force(double forcetype) {
 			// f[k].f7=f[k].f7-forcetype;
 		}
 	}
+	delete [] z;
 }
 
 /** Add obstacle. */
