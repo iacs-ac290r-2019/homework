@@ -6,7 +6,7 @@ else
 endif
 
 # Show the operating system
-$(info OS is $(detected_OS))
+# $(info OS is $(detected_OS))
 
 # Set the compiler and flags based on the operating system
 # Supported OS are Mac OSX ("Darwin") and Linux ("Linux")
@@ -28,7 +28,7 @@ endif
 # Lists of files to be built
 objs=lbm.o file.o
 src=$(patsubst %.o,%.cc,$(objs))
-execs=lbm_test
+execs=lbm_pbc lbm_mbc
 
 all: $(execs)
 
@@ -46,7 +46,10 @@ clean:
 %.o: %.cc
 	$(cxx) $(cflags) -c $<
 
-lbm_test: lbm_test.cc $(objs)
+lbm_pbc: lbm_pbc.cc $(objs)
+	$(cxx) $(cflags) -o $@ $^
+
+lbm_mbc: lbm_mbc.cc $(objs)
 	$(cxx) $(cflags) -o $@ $^
 
 .PHONY: clean depend
