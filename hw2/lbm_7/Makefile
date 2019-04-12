@@ -12,7 +12,7 @@ $(info OS is $(detected_OS))
 # Supported OS are Mac OSX ("Darwin") and Linux ("Linux")
 
 # Is the OS Mac?
-ifeq (detected_OS, Darwin)
+ifeq ($(detected_OS), Darwin)
 cxx := g++-mp-7
 cflags := -fopenmp -Wall -ansi -pedantic -O3
 lp_lflags := -llapack -lblas
