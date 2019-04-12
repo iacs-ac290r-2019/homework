@@ -30,28 +30,15 @@ void lbm::init_hydro(double macro_rho,double macro_ux,double macro_uy) {
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
-			f[k].rho=macro_rho;
-			f[k].ux=macro_ux;
-			f[k].uy=macro_uy;
+			f[k].init_hydro(macro_rho,macro_ux,macro_uy);
 		}
 	}
 }
 
 /** Initialize flowtype.
- * \param[in] flowtype 0: Poiseuille flow. */
+ * \param[in] flowtype 1: Poiseuille flow. */
 void lbm::init_flow(int flowtype) {
 	if(flowtype==1) init_poiseuille();
-}
-
-/** Initialize Poiseuille flow. */
-void lbm::init_poiseuille() {
-	// Used later for a physically accurate Poiseuille flow
-	// double Ly=static_cast<double>(ny),Lx=static_cast<double>(nx);
-	// double dp=36*Re*nu*nu*Lx/D/Ly/Ly;
-	for(int i=0;i<nyb;i++) {
-		f[i*nxb+1].rho=1+0.01;
-		f[(i+1)*nxb-2].rho=1-0.01;
-	}
 	// Print out initial inputs
 	printf("Poiseuille flow:\n");
 	printf("Reynolds number: %.6f\n",Re);
@@ -60,51 +47,26 @@ void lbm::init_poiseuille() {
 	printf("Characteristic length: %.0f\n",D);
 	printf("Initial density at inlet: %.6f\n",f[nxb+1].rho);
 	printf("Initial density at outlet: %.6f\n",f[nxb*nyb-2].rho);
-	printf("Centerline velocity: %.6f\n",3*Re*nu/2/D);
 }
 
-/** Initialize steady state Poiseuille flow. */
-// void lbm::init_sstpoiseuille() {
-// 	double u,y,p,Ly=static_cast<double>(ny-1),Lx=static_cast<double>(nx-1);
-// 	double dp=36*Re*nu*nu*Lx/D/Ly/Ly;
-// 	// East and west
-// 	for(int i=0;i<nyb;i++) {
-// 		y=1-1./Ly*i;
-// 		u=6*Re*nu/D*(y-y*y);
-// 		f[i*nxb+1].rho=1+dp/2;
-// 		f[i*nxb+1].ux=u;
-// 		f[(i+1)*nxb-2].rho=1-dp/2;
-// 		f[(i+1)*nxb-2].ux=u;
-// 	}
-// 	// Top and bottom
-// 	for(int j=1;j<=nx;j++) {
-// 		p=1+dp*(1./2-j/Lx);
-// 		f[j].uy=0;
-// 		f[j].rho=p;
-// 		f[nxb*(nyb-1)+j].uy=0;
-// 		f[nxb*(nyb-1)+j].rho=p;
-// 	}
-// }
+/** Initialize Poiseuille flow. */
+void lbm::init_poiseuille() {
+	for(int i=0;i<nyb;i++) {
+		f[i*nxb+1].rho=1+0.05;
+		f[(i+1)*nxb-2].rho=1-0.05;
+	}
+}
 
 /** Initialize populations. */
 void lbm::init_pop() {
-	lattice *z=new lattice[nxb*nyb];
-    memcpy(z,f,nxb*nyb*sizeof(lattice));
+	// lattice *z=new lattice[nxb*nyb];
+    // memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
-			f[k].f0=z[k].feq0;
-			f[k].f1=z[k].feq1;
-			f[k].f2=z[k].feq2;
-			f[k].f3=z[k].feq3;
-			f[k].f4=z[k].feq4;
-			f[k].f5=z[k].feq5;
-			f[k].f6=z[k].feq6;
-			f[k].f7=z[k].feq7;
-			f[k].f8=z[k].feq8;
+			f[k].init_pop();
 		}
 	}
-	delete [] z;
 }
 
 /** Set the boundary condition.
@@ -205,6 +167,7 @@ void lbm::mbc() {
 	f[0].f5=f[nxb+1].f7;
 	// Southeast corner bounce-back
 	f[nxb-1].f6=f[nxb+nxb-1-1].f8;
+	init_poiseuille();
 }
 
 
@@ -233,120 +196,60 @@ void lbm::hydro() {
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
-			f[k].rho=f[k].f0+f[k].f1+f[k].f2+f[k].f3+f[k].f4+f[k].f5+f[k].f6+f[k].f7+f[k].f8;
-			f[k].ux=(f[k].f1-f[k].f3+f[k].f5-f[k].f6-f[k].f7+f[k].f8)/f[k].rho;
-			f[k].uy=(f[k].f2-f[k].f4+f[k].f5+f[k].f6-f[k].f7-f[k].f8)/f[k].rho;
-			// printf("Lattice %d, rho: %g, ux: %g, uy: %g\n",i*nxb+j,f[i*nxb+j].rho,f[i*nxb+j].ux,f[i*nxb+j].uy);
+			f[k].hydro();
 		}
 	}
 }
 
 /** Calculate the equilibrium populations. */
 void lbm::equilibrium() {
-	// Sound speed squared
-	// const double cs2=1./3,cs22=2*cs2,cssq=2./9;
-	const double cs2=1./3,cs4=1./9;
-	// Weights for D2Q9
-	const double w0=4./9,w1=1./9,w2=1./36;
-	// Traverse the simulation region with buffer to calculate f_eq
-	lattice *z=new lattice[nxb*nyb];
-    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
-			double rho=z[k].rho;
-			double u=z[k].ux;
-			double v=z[k].uy;
-			double ui=u/cs2;
-			double vi=v/cs2;
-			double u2=u*u/2/cs4;
-			double v2=v*v/2/cs4;
-			double sumsq=(u*u+v*v)/2/cs2;
-			double sumsq2=sumsq*(1.-cs2)/cs2;
-			double uv=ui*vi;
-			f[k].feq0=rho*w0*(1.-sumsq);
-			f[k].feq1=rho*w1*(1.-sumsq+ui+u2);
-			f[k].feq2=rho*w1*(1.-sumsq+vi+v2);
-			f[k].feq3=rho*w1*(1.-sumsq-ui+u2);
-			f[k].feq4=rho*w1*(1.-sumsq-vi+v2);
-			f[k].feq5=rho*w2*(1.+sumsq2+ui+vi+uv);
-			f[k].feq6=rho*w2*(1.+sumsq2-ui+vi-uv);
-			f[k].feq7=rho*w2*(1.+sumsq2-ui-vi+uv);
-			f[k].feq8=rho*w2*(1.+sumsq2+ui-vi-uv);
+			f[k].equilibrium();
 		}
 	}
-	delete [] z;
 }
 
 /** Collide and calculate the population in the next timestep. */
 void lbm::collide() {
 	double omega=1./tau;
-	lattice *z=new lattice[nxb*nyb];
-    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
-			f[k].f0=(1.-omega)*z[k].f0+omega*z[k].feq0;
-			f[k].f1=(1.-omega)*z[k].f1+omega*z[k].feq1;
-			f[k].f2=(1.-omega)*z[k].f2+omega*z[k].feq2;
-			f[k].f3=(1.-omega)*z[k].f3+omega*z[k].feq3;
-			f[k].f4=(1.-omega)*z[k].f4+omega*z[k].feq4;
-			f[k].f5=(1.-omega)*z[k].f5+omega*z[k].feq5;
-			f[k].f6=(1.-omega)*z[k].f6+omega*z[k].feq6;
-			f[k].f7=(1.-omega)*z[k].f7+omega*z[k].feq7;
-			f[k].f8=(1.-omega)*z[k].f8+omega*z[k].feq8;
+			f[k].collide(omega);
 		}
 	}
-	delete [] z;
 }
 
 /** Add forcing. */
 void lbm::force(double forcetype) {
-	// Sound speed squared
-	const double cs2=1./3;
-	// Weights for D2Q9
-	const double w1=1./9,w2=1./36;
-	lattice *z=new lattice[nxb*nyb];
-    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=1;i<=nx;i++) {
 		for(int j=1;j<=ny;j++) {
 			int k=j*nxb+i;
-			double rho=f[k].rho;
-			f[k].f1=z[k].f1+w1*forcetype/cs2*rho;
-			f[k].f5=z[k].f5+w2*forcetype/cs2*rho;
-			f[k].f8=z[k].f8+w2*forcetype/cs2*rho;
-			f[k].f3=z[k].f3-w1*forcetype/cs2*rho;
-			f[k].f6=z[k].f6-w2*forcetype/cs2*rho;
-			f[k].f7=z[k].f7-w2*forcetype/cs2*rho;
-			// f[k].f1=f[k].f1+forcetype;
-			// f[k].f5=f[k].f5+forcetype;
-			// f[k].f8=f[k].f8+forcetype;
-			// f[k].f3=f[k].f3-forcetype;
-			// f[k].f6=f[k].f6-forcetype;
-			// f[k].f7=f[k].f7-forcetype;
+			f[k].force(forcetype);
 		}
 	}
-	delete [] z;
 }
 
-/** Add obstacle. */
-void lbm::obstacle() {
-	int nobst=10;
-	int j=nx/4;
-	int ibot=ny/2-nobst/2;
-	int itop=ny/2+nobst/2+1;
-	for(int i=ibot;i<=itop;i++) {
-		f[i*nxb+j].f1=f[i*nxb+j+1].f3;
-		f[i*nxb+j].f5=f[(i+1)*nxb+j+1].f7;
-		f[i*nxb+j].f8=f[(i+1)*nxb+j-1].f6;
-		f[i*nxb+j].f3=f[i*nxb+j-1].f1;
-		f[i*nxb+j].f7=f[(i-1)*nxb+j].f5;
-		f[i*nxb+j].f6=f[(i-1)*nxb+j].f8;
+/** Add obstacle. 
+ * \param[in] i the x position of the obstacle.
+ * \param[in] jbot the bottom y position of the obstacle.
+ * \param[in] jtop the top y position of the obstacle. */
+void lbm::obstacle(int i,int jbot,int jtop) {
+	for(int j=jbot;j<=jtop;j++) {
+		int k=j*nxb+i;
+		f[k].f1=f[k+1].f3;
+		f[k].f5=f[k+nxb+1].f7;
+		f[k].f8=f[k-nxb+1].f6;
+		f[k].f3=f[k-1].f1;
+		f[k].f7=f[k-nxb-1].f5;
+		f[k].f6=f[k+nxb-1].f8;
 	}
-	f[itop*nxb+j].f2=f[itop*nxb+j+1].f4;
-	f[itop*nxb+j].f6=f[(itop-1)*nxb+j+1].f8;
-	f[ibot*nxb+j].f4=f[ibot*nxb+j-1].f2;
-	f[ibot*nxb+j].f7=f[(ibot-1)*nxb+j-1].f5;
+	f[jtop*nxb+i].f2=f[jtop*nxb+i+nxb].f4;
+	f[jtop*nxb+i].f6=f[jtop*nxb+nxb-1].f8;
+	f[jbot*nxb+i].f4=f[jbot*nxb+i-nxb].f2;
+	f[jbot*nxb+i].f7=f[jbot*nxb+i-nxb-1].f5;
 }
 
 /** Initialize routine called in main file.
@@ -355,44 +258,58 @@ void lbm::obstacle() {
  * \param[in] macro_uy the macrosopic velocity in the y direction. */
 void lbm::initialize(double macro_rho,double macro_ux,double macro_uy,int flowtype) {
 	init_hydro(macro_rho,macro_ux,macro_uy);
+	init_flow(flowtype);
 	equilibrium();
 	init_pop();
+}
+
+/** Set up the shape of the channel custom to the problem. 
+ * \param[in] w the width of the narrowing.
+ * \param[in] l the length of the narrowing. */
+void lbm::set_channel(int w,int l) {
+	int offset=(nx-l)/2;
+	int h=(ny-w)/2;
+	// Bottom two vertical
+	obstacle(offset+1,1,h);
+	obstacle(offset+l-1,1,h);
+	// Top two vertical
+	obstacle(offset+1,h+w,ny);
+	obstacle(offset+l-1,h+w,ny);
+	// North solid
+	for(int i=offset+1;i<=offset+l-1;i++) {
+		int k=nxb*(h+1)+i;
+		f[k].f4=f[k-nxb].f2;
+		f[k].f7=f[k-nxb-1].f5;
+		f[k].f8=f[k-nxb+1].f6;
+	}
+	// South solid
+	for(int i=offset+1;i<=offset+l-1;i++) {
+		int k=nxb*(h+w-1)+i;
+		f[k].f2=f[k+nxb].f4;
+		f[k].f5=f[k+nxb+1].f7;
+		f[k].f6=f[k+nxb-1].f8;
+	}
 }
 
 /** Main solver to step forward in time using the lattice Boltzmann method.
  * \param[in] niters the number of iterations.
  * \param[in] nout the number of equally-spaced output frames.
  * \param[in] bc_type the type of boundary condition.
- * \param[in] forcetype the type and value of external force. */
-void lbm::solve(int niters,int nout,int bctype,double forcetype) {
+ * \param[in] forcetype the type and value of external force.
+ * \param[in] w the width of the narrowing.
+ * \param[in] l the length of the narrowing. */
+void lbm::solve(int niters,int nout,int bctype,double forcetype,int w,int l) {
 	int skip=niters/(nout-1);
-	int fr=0;
-	// Output the initial frame
-	output(fr);
-	fr++;
+	int fr=1;
 	for(int t=1;t<niters;t++) {
-		// printf("\n\n\n\nIteration %d\n",t);
 		// LBM routine
-		// init_poiseuille();
 		bc(bctype);
-		// printf("\nIteration %d Check f after bc()\n",t);
-		// checkf();
+		set_channel(w,l);
 	    stream();
-	    // printf("\nIteration %d Check f after stream()\n",t);
-		// checkf();
 	    hydro();
-	    // printf("\nIteration %d Check f after hydro()\n",t);
-		// checkf();
 	    equilibrium(); 
-	    // printf("\nIteration %d Check f after equilibrium()\n",t);
-		// checkf();
 	    collide();
-	    // printf("\nIteration %d Check f after collide()\n",t);
-		// checkf();
-	    force(forcetype);
-	    // printf("\nIteration %d Check f after force()\n",t);
-		// checkf();
-	    // obstacle();
+	    force(forcetype);	 
 		// Output to files
 		if(t%skip==0) {
 			output(fr);

@@ -51,7 +51,7 @@ class lbm {
 
 		/*********************************** Main routine ************************************/
 		/** Main solve routine called in main file.*/
-		void solve(int niters,int nout,int bctype,double forcetype);
+		void solve(int niters,int nout,int bctype,double forcetype,int w,int l);
 		/** Set the boundary condition. */
 		void bc(int bctype);
 		/** Periodic boundary condition. */
@@ -69,7 +69,9 @@ class lbm {
 		/** Add forcing. */
 		void force(double forcetype);
 		/** Add obstacle. */
-		void obstacle();
+		void obstacle(int i,int jbot,int jtop);
+		/** Set up channel shape. */
+		void set_channel(int w,int l);
 
 		/***************************** Post-processing routine *******************************/
 		/** Set output directory. */
