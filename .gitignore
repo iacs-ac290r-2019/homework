@@ -28,6 +28,7 @@ hw1/latex
 *.lo
 *.o
 *.obj
+*.exp
 
 # Precompiled Headers
 *.gch
