@@ -20,6 +20,12 @@
 hw1/html
 hw1/latex
 
+# VS Code directories
+.vscode/
+
+# IPython checkpoints
+.ipynb_checkpoints/
+
 # Prerequisites
 *.d
 
@@ -54,3 +60,6 @@ hw1/latex
 *.x
 *.out
 *.app
+
+# Specific executables with no suffix
+lbm_7/lbm_test
