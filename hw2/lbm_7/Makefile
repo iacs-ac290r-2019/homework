@@ -1,7 +1,29 @@
-# Set the compiler and flags
-cxx=g++-mp-7 -O3 
-cflags=-fopenmp -Wall -ansi -pedantic
-lp_lflags=-llapack -lblas
+# Detect the operating system
+ifeq ($(OS),Windows_NT) 
+    detected_OS := Windows
+else
+    detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
+endif
+
+# Show the operating system
+$(info OS is $(detected_OS))
+
+# Set the compiler and flags based on the operating system
+# Supported OS are Mac OSX ("Darwin") and Linux ("Linux")
+
+# Is the OS Mac?
+ifeq (detected_OS, Darwin)
+cxx := g++-mp-7
+cflags := -fopenmp -Wall -ansi -pedantic -O3
+lp_lflags := -llapack -lblas
+endif
+
+# Is the OS Linux?
+ifeq ($(detected_OS), Linux)
+cxx := g++-8
+cflags := -fopenmp -Wall -ansi -pedantic -O3
+lp_lflags := -llapack -lblas
+endif
 
 # Lists of files to be built
 objs=lbm.o file.o
