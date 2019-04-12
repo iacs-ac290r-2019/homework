@@ -1,3 +1,15 @@
+Compile
+make
+
+Problem 1.1
+./lbm_pbc
+
+Problem 1.2
+./lbm_mbc
+
+
+plot.py is deprecated, use viz.ipynb to plot
+
 Input parameter
 	input()
 
