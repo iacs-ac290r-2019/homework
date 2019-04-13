@@ -43,11 +43,11 @@ int main() {
     for (int w=10; w<=50; w += 10)
     {
         // Generate output directory for this choice of w
-        char odir_w[50];
-        sprintf(odir_w, "lbm_mbc_Re001.out/width_%d", w);
+        char odir[50];
+        sprintf(odir, "lbm_mbc_Re001.out/width_%d", w);
 
         // Create the simulation domain with the specified parameters and dimensions
-        lbm fl(Re,tau,D,nx,ny,odir_w);
+        lbm fl(Re,tau,D,nx,ny,odir);
 
         // Call initialization functions to create simulation region and set up the initial condition
         fl.initialize(1.,0.,0.,flowtype);

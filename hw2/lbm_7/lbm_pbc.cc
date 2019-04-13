@@ -39,15 +39,36 @@ int main() {
     for (int w=10; w<=50; w += 10)
     {
         // Generate output directory for this choice of w
-        char odir_w[50];
-        sprintf(odir_w, "lbm_pbc_Re001.out/width_%d", w);
+        char odir[50];
+        sprintf(odir, "lbm_pbc_Re001.out/width_%d", w);
 
         // Create the simulation domain with the specified parameters and dimensions
-        lbm fl(Re,tau,D,nx,ny,odir_w);
+        lbm fl(Re,tau,D,nx,ny,odir);
 
         // Call initialization functions to create simulation region and set up the initial condition
         fl.initialize(1.,0.,0.,flowtype);
         fl.solve(15000,100,bctype,forcetype,w,l);
         printf("Ran for 15000 iterations with w=%d. Saved output every 150 frames. Finished!\n", w);
+    }
+
+    // Run multiple passes for different kinematic viscosities nu
+    // nu = (2*tau-1)/6 so tau = (6*nu+1)/2
+    // To get nu between 0.05 and 0.1667, need tau betwee 0.65 and 1.0
+    for (int tau_i = 65; tau_i <= 100; tau += 5)
+    {
+        // The "real" tau is tau_i / 100; use an integer in the loop for convenience
+        double tau = double(tau_i) / 100.0;
+        
+        // Generate output directory for this choice of w
+        char odir[50];
+        sprintf(odir, "lbm_pbc_Re001.out/tau_%d", tau_i);
+
+        // Create the simulation domain with the specified parameters and dimensions
+        lbm fl(Re,tau,D,nx,ny,odir);
+
+        // Call initialization functions to create simulation region and set up the initial condition
+        fl.initialize(1.,0.,0.,flowtype);
+        fl.solve(15000,100,bctype,forcetype,w,l);
+        printf("Ran for 15000 iterations with tau=%0.2f. Saved output every 150 frames. Finished!\n", tau);
     }
 }
