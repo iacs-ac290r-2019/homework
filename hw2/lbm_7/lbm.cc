@@ -335,7 +335,7 @@ void lbm::output(int fr) {
 	// Header line prints the timestep and system dimensions
 	sprintf(outbuf,"%s/fr_%04d.txt",outdir,fr);
 	fp=safe_fopen(outbuf,"w");
-	fprintf(fp,"0 0 %d %d %d\n",fr,nx,ny);
+	fprintf(fp,"0 0 0 %d %d %d\n",fr,nx,ny);
 	// Output the density, x-velocity, and y-velocity
 	for(int i=1;i<=ny;i++) {
 		for(int j=1;j<=nx;j++) {

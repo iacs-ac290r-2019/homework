@@ -62,4 +62,6 @@ hw1/latex
 *.app
 
 # Specific executables with no suffix
-lbm_7/lbm_test
+hw2/lbm_7/lbm_test
+hw2/lbm_7/lbm_pbc
+hw2/lbm_7/lbm_mbc
