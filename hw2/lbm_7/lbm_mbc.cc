@@ -38,4 +38,20 @@ int main() {
     // double forcetype=0.0001;
     fl.solve(2000,100,bctype,forcetype,w,l);
     printf("Ran for 2000 iterations. Saved output every 20 frames. Finished!\n");
+
+    // Run multiple passes for different widths w
+    for (int w=10; w<=50; w += 10)
+    {
+        // Generate output directory for this choice of w
+        char odir_w[50];
+        sprintf(odir_w, "lbm_mbc_Re001.out/width_%d", w);
+
+        // Create the simulation domain with the specified parameters and dimensions
+        lbm fl(Re,tau,D,nx,ny,odir_w);
+
+        // Call initialization functions to create simulation region and set up the initial condition
+        fl.initialize(1.,0.,0.,flowtype);
+        fl.solve(2000,100,bctype,forcetype,w,l);
+        printf("Ran for 2000 iterations with w=%d. Saved output every 20 frames. Finished!\n", w);
+    }
 }
