@@ -1,0 +1,4 @@
+Error at t* = 0.50000 is 8.293797e-08
+real    0m2.952s
+user    0m0.000s
+sys     0m0.000s

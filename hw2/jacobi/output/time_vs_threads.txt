@@ -1,0 +1,5 @@
+n= 256
+8 threads: 39.940
+16 threads: 44.363 seconds
+32 threads: 36.698 seconds
+64 threads: doesn't run

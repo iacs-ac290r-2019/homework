@@ -397,16 +397,113 @@ U_{i,j}^{\left(n\right)}}{U_{i,j}^{\left(n\right)}},
     \end{equation}
     where \(U\) is the analytic solution.
     
+\textbf{Code Overview}
+Our solution to this problem can be found in the folder \tty{hw2/jacobi} in our team's repository for this course.
+Here is a brief overview.  There is only one source code file in this solution, \tty{parallel.cu},
+plus a short Makefile.  We will say a few words about the six steps described in the algorithm overview.
+
+In step I, we declare, allocate and initialize memory for the field $u$ on the CPU.  
+This is done with the array \tty{u} of size \tty{nx} x \tty{ny}.  
+It's a standard nested for loop over \tty{i} and \tty{j}, with the action happening in this statement:
+\begin{lstlisting}[style=CodeSnippet]
+u[j*nx + i] = sin(i * dx) * sin(j * dy); 
+\end{lstlisting}
+In step 2, we allocate GPU memory for \tty{\_u}, \tty{\_u\_new}, and \tty{\_error}.
+These are, respectively, the current field; the field at the next time step; 
+and the error vs. the analytical solution.  
+These two statements give an idea of how we allocate memory on the GPU and set it from the CPU:
+\begin{lstlisting}[style=CodeSnippet]
+cudaMalloc(&_u, nx*ny * sizeof(double));
+cudaMemcpy(_u, u, nx*ny * sizeof(double), cudaMemcpyHostToDevice);
+\end{lstlisting}
+
+In step 3, we configure the GPU kernel, i.e. block sizes.
+The variables \tty{tx} and \tty{ty} and both set to the preprocessor constant \tty{MAX\_THREADS\_DIM}.
+This is currently set to 16, but is hardware dependent and could change if we compiled on different hardware.
+A more sophisticated technique would be to detect the hardware and tune it accordingly, 
+but we don't yet know how to do that, and it's not critical to performance here.
+Once the thread counts are set, the box sizes \tty{bx} and \tty{by} are a straightforward 
+calculation where we perform integer division rounding up.  Then we create \tty{dim3} structures.
+These two statements give the flavor:
+\begin{lstlisting}[style=CodeSnippet]
+int bx = (int) ceil((double) nx / tx);
+dim3 dimBlocks(tx, ty);
+\end{lstlisting}
+
+In step 4, we write the GPU kernel that advances the simulation one time step.
+This is really the heart of the program.  
+At the top, we compute the two indices \tty{ti} and \tty{tj} from the properties of the block.
+We compute the updated value $U_{i,j}^{n+1}$ as the old value $U_{i,j}^{n}$ plus a prefactor
+$\frac{D\Delta T}{\Delta x^2}$ multiplied by a finite difference stencil for the second derivative.
+This statement computes the right hand term, i.e. the prefactor times the second derivative:
+\begin{lstlisting}[style=CodeSnippet]
+double rightTerm = pref * (_u[tj*nx + (ti+1)] + _u[tj*nx + (ti-1)] +
+	_u[(tj+1)*nx + ti] +_u[(tj-1)*nx + ti] -4*_u[tj*nx + ti]	);
+\end{lstlisting}
+This statement is wrapped inside an if and only executes when \tty{ti} and \tty{tj} are both
+in the range mapping to actual data points.  This check is necessary in case
+the number of grid points \tty{nx} and \tty{ny} are not integer multiplies of the thread count.
+
+In step 5, we write the GPU kernel to compute the error against the analytical solution.
+It's a similar for loop to step 4, with the expected statements inside it.
+We compute the numerical and analytical solutions, then set the error
+equal to the absolute value of their difference:
+\begin{lstlisting}[style=CodeSnippet]
+double discretizedValue = _u[tj*nx + ti];
+double analyticalValue = sin(dx * ti)*sin(dy * tj)*exp(-2*D*t);
+_error[tj*nx + ti] = abs(discretizedValue - analyticalValue);
+\end{lstlisting}
+Step 6, copying back to the CPU, is a one liner:
+\begin{lstlisting}[style=CodeSnippet]
+cudaMemcpy(u, _u, nx*ny * sizeof(double), cudaMemcpyDeviceToHost);
+\end{lstlisting}
+
     If you have time, discuss the following:
+We ran this program on grid sizes that were powers of 2 in a reasonable range.
+Specifically, we ran this for $n$ in 16, 32, 64, 256, 512.
+All runs were done on a PC with a high end Titan V GPU.
+We assembled charts and regression fits in \tty{jacobi.ipynb}.
+We present the highlight below.
+
     \begin{itemize}
       \item How does the error change as you increase the resolution? Does this behavior make sense?
+The error scales according to $\Delta X^2$.  
+We ran a linear regression of $\log(\epsilon) \tilde \log(n)$
+and the estimated slope was -1.997, very close to theoretical value of -2.0 we would have expected.
+Here is the plot:
+\begin{center}
+\begin{figure}
+\includegraphics[width=0.90\textwidth]{jacobi_error.png}
+\captionof*{figure}{Jacob Error vs. Grid Size}
+\end{figure}
+\end{center}
+
       \item How does the runtime scale with the resolution? You can get a rough estimate by using the bash command \texttt{time} when executing your program, like:
     \vspace{3mm}\\ \texttt{./jacobi\_solver.cu n} \vspace{3mm}\\ and using the result for \texttt{real}. \\
+Intuitively we would expect that the run-time should scale quadratically with the grid size.
+This result is borne out over the range of $n$ tested above.  
+The numerical estimate of the slope of $\log(t)$ vs. $\log(n)$ was 1.922.
+Here is the plot:
+\begin{center}
+\begin{figure}
+\includegraphics[width=0.90\textwidth]{jacobi_time.png}
+\captionof*{figure}{Jacob Runtime vs. Grid Size}
+\end{figure}
+\end{center}
+
+
       \item How does the runtime change as you change the kernel execution configuration?
         e.g., play around the \texttt{MAX\_THREADS\_DIM} parameter as well as different schemes for setting up the thread blocks.
+We tried the following choices for the number of threads: 8, 16, 32, 64.
+64 threads didn't run; the program terminated immediately.
+Run-time with 8, 16, and 32 was 39.940, 44,363, and 36.698 seconds, respectively.
+This didn't make a huge amount of sense, because it wasn't even monotonic.
+A second trial with n=16 took 40.542 seconds.
+If we had to guess, there is probably an advantage to using as many threads as possible
+(probably 32 on the Titan-V card), but this advantage likely matters more for larger calculations
+than this one for n=256.
       \item Use shared memory in the Jacobi kernel
     \end{itemize}
-
 
 \end{document}
 
