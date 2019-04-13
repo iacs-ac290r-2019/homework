@@ -339,7 +339,7 @@ void lbm::output(int fr) {
 	// Output the density, x-velocity, and y-velocity
 	for(int i=1;i<=ny;i++) {
 		for(int j=1;j<=nx;j++) {
-			fprintf(fp,"%d %d %g %g %g\n",i,j,f[i*nxb+j].rho,f[i*nxb+j].ux,f[i*nxb+j].uy);
+			fprintf(fp,"%d %d %g %g %g %g\n",i,j,f[i*nxb+j].rho,f[i*nxb+j].ux,f[i*nxb+j].uy, f[i*nxb+j].p);
 		}
 	}
 	fclose(fp);

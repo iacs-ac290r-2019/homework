@@ -7,7 +7,7 @@
 class lattice {
 	public:
 		/** Hydro variables. */
-		double rho,ux,uy;
+		double rho,ux,uy,p;
 		/** Population at current state, equilibrium at the lattice */
 		double f0,feq0;
 		/** Population at current state, equilibrium streaming east */
@@ -52,6 +52,11 @@ class lattice {
 			rho=f0+f1+f2+f3+f4+f5+f6+f7+f8;
 			ux=(f1+f5+f8-f3-f6-f7)*1./rho;
 			uy=(f2+f5+f6-f4-f7-f8)*1./rho;
+			// Calculate the pressure; pressure + rho (u_x^2 + u_y^2) = sum(f_p v2_p)
+			// this is the second moment i.e. the sum of speed squared over the populations
+			double moment2 =1.0*(f1+f2+f3+f4) + 2.0*(f1+f2+f3+f4);
+			// Subtract out the contribution from the movement of the fluid to get the pressure
+			p = moment2 - rho * (ux*ux + uy*uy);
 		}
 
 		/** Calculate the equilibrium populations. */
