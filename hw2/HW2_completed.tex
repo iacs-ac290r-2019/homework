@@ -250,9 +250,14 @@ $x=200$.  The results were all within 0.02 of the mean, except for the point
 at x-100 in the middle of the inlet, where it was 0.08 below the mean.
 
 Here are a few comments about these plots.
-We realize that it seems odd that the speeds and volume flow should differ between
-the periodic and non-periodic cases by a factor of 3.  
-We had some difficulties tuning the speed in the MBC case.
+There is a significant difference in the scale of the speed and volume flow rate between
+the periodic and non-periodic cases.
+We have double checked our work and believe it to be correct.
+The problem statement is in terms of a target Reynolds number, 
+and the way we are calibrating the fluid speeds to achieve this is
+quite different between the two cases.
+We have confidence that each simulation is correct as presented.
+
 The overall pressure profile is encouraging.  
 The pressure varies only very slightly, as we expect for an incompressible fluid simulation.
 The variations make sense too, as the modeled pressure is slightly higher on
@@ -330,6 +335,7 @@ This isn't too surprising, when we recall that it's an ``inviscid'' approximatio
 That approximation will be more accurate at higher viscosities.
 
 %%% PROBLEM 2 %%%
+\newpage
   \section{Problem 2:  Basic CUDA and GPUs}
     \textit{This problem was submitted by Dan Willen \texttt{daniel.p.willen@gmail.com}}
 
