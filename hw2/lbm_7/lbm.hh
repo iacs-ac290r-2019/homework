@@ -56,8 +56,8 @@ class lbm {
 		void bc(int bctype);
 		/** Periodic boundary condition. */
 		void pbc();
-		/** Mixed boundary condition. */
-		void mbc();
+		/** Open boundary condition. */
+		void obc();
 		/** Move the populations along eight directions. */
 		void stream();
 		/** Calculate hydro variables. */
