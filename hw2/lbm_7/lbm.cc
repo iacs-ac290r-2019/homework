@@ -45,6 +45,8 @@ void lbm::init_flow(int flowtype) {
 	printf("Relaxation parameter: %.6f\n",tau);
 	printf("Kinematic viscosity: %.6f\n",nu);
 	printf("Characteristic length: %.0f\n",D);
+	printf("Maximum steady velocity: %g\n",Re*nu/D);
+	printf("Force: %g\n",8*nu*Re*nu/D/D/D);
 	printf("Initial density at inlet: %.6f\n",f[nxb+1].rho);
 	printf("Initial density at outlet: %.6f\n",f[nxb*nyb-2].rho);
 }
@@ -59,8 +61,6 @@ void lbm::init_poiseuille() {
 
 /** Initialize populations. */
 void lbm::init_pop() {
-	// lattice *z=new lattice[nxb*nyb];
-    // memcpy(z,f,nxb*nyb*sizeof(lattice));
 	for(int i=0;i<nxb;i++) {
 		for(int j=0;j<nyb;j++) {
 			int k=j*nxb+i;
@@ -90,7 +90,6 @@ void lbm::pbc() {
 		f[k].f1=z[k+nx].f1;
 		f[k].f5=z[k+nx].f5;
 		f[k].f8=z[k+nx].f8;
-		// printf("West inlet done\n");
 	}
 	// East outlet
 	for(int j=1;j<=ny;j++) {
@@ -98,7 +97,6 @@ void lbm::pbc() {
 		f[k].f3=z[k-nx].f3;
 		f[k].f6=z[k-nx].f6;
 		f[k].f7=z[k-nx].f7;
-		// printf("East outlet done\n");
 	}
 	// North solid
 	for(int i=1;i<=nx;i++) {
@@ -135,7 +133,6 @@ void lbm::mbc() {
 		f[k].f1=f[k+1].f1;
 		f[k].f5=f[k+1].f5;
 		f[k].f8=f[k+1].f8;
-		// printf("West inlet done\n");
 	}
 	// East outlet
 	for(int j=1;j<=ny;j++) {
@@ -143,7 +140,6 @@ void lbm::mbc() {
 		f[k].f3=f[k-1].f3;
 		f[k].f6=f[k-1].f6;
 		f[k].f7=f[k-1].f7;
-		// printf("East outlet done\n");
 	}
 	// North solid
 	for(int i=1;i<=nx;i++) {
@@ -300,7 +296,9 @@ void lbm::set_channel(int w,int l) {
  * \param[in] l the length of the narrowing. */
 void lbm::solve(int niters,int nout,int bctype,double forcetype,int w,int l) {
 	int skip=niters/(nout-1);
-	int fr=1;
+	int fr=0;
+	output(fr);
+	fr++;
 	for(int t=1;t<niters;t++) {
 		// LBM routine
 		bc(bctype);
