@@ -47,15 +47,16 @@ void lbm::init_flow(int flowtype) {
 	printf("Characteristic length: %.0f\n",D);
 	printf("Maximum steady velocity: %g\n",Re*nu/D);
 	printf("Force: %g\n",8*nu*Re*nu/D/D/D);
-	printf("Initial density at inlet: %.6f\n",f[nxb+1].rho);
-	printf("Initial density at outlet: %.6f\n",f[nxb*nyb-2].rho);
+	printf("Initial density at inlet: %g\n",f[nxb].rho);
+	printf("Initial density at outlet: %g\n",f[nxb*nyb-1].rho);
 }
 
 /** Initialize Poiseuille flow. */
 void lbm::init_poiseuille() {
-	for(int i=0;i<nyb;i++) {
-		f[i*nxb+1].rho=1+0.05;
-		f[(i+1)*nxb-2].rho=1-0.05;
+	for(int j=1;j<=ny;j++) {
+		f[j*nxb].rho=1+11./5000000/3600;
+		// f[j*nxb+1].ux=Re*nu/D;
+		f[(j+1)*nxb-1].rho=1-11./5000000/3600;
 	}
 }
 
@@ -74,67 +75,67 @@ void lbm::init_pop() {
 void lbm::bc(int bctype) {
 	// Periodic boundary condition
 	if(bctype==0) pbc();
-	// Mixed boundary conidtion
-	else if(bctype==1) mbc();
+	// Open boundary conidtion
+	else if(bctype==1) obc();
 }
 
 /** Periodic boundary condition.
  *  West periodic, east periodic.
  *  North no-slip, south no-slip.  */
 void lbm::pbc() {
-	lattice *z=new lattice[nxb*nyb];
-    memcpy(z,f,nxb*nyb*sizeof(lattice));
 	// West inlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb;
-		f[k].f1=z[k+nx].f1;
-		f[k].f5=z[k+nx].f5;
-		f[k].f8=z[k+nx].f8;
+		f[k].f1=f[k+nx].f1;
+		f[k].f5=f[k+nx].f5;
+		f[k].f8=f[k+nx].f8;
 	}
 	// East outlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb+nx+1;
-		f[k].f3=z[k-nx].f3;
-		f[k].f6=z[k-nx].f6;
-		f[k].f7=z[k-nx].f7;
+		f[k].f3=f[k-nx].f3;
+		f[k].f6=f[k-nx].f6;
+		f[k].f7=f[k-nx].f7;
 	}
 	// North solid
 	for(int i=1;i<=nx;i++) {
 		int k=nxb*(nyb-1)+i;
-		f[k].f4=z[k-nxb].f2;
-		f[k].f7=z[k-nxb-1].f5;
-		f[k].f8=z[k-nxb+1].f6;
+		f[k].f4=f[k-nxb].f2;
+		f[k].f7=f[k-nxb-1].f5;
+		f[k].f8=f[k-nxb+1].f6;
 	}
 	// South solid
 	for(int i=1;i<=nx;i++) {
 		int k=i;
-		f[k].f2=z[k+nxb].f4;
-		f[k].f5=z[k+nxb+1].f7;
-		f[k].f6=z[k+nxb-1].f8;
+		f[k].f2=f[k+nxb].f4;
+		f[k].f5=f[k+nxb+1].f7;
+		f[k].f6=f[k+nxb-1].f8;
 	}
 	// Northwest corner bounce-back
-	f[nxb*(nyb-1)].f8=z[nxb*(nyb-1)-nxb+1].f6;
+	f[nxb*(nyb-1)].f8=f[nxb*(nyb-1)-nxb+1].f6;
 	// Northeast corner bounce-back
-	f[nxb*nyb-1].f7=z[nxb*nyb-nxb-1-1].f5;
+	f[nxb*nyb-1].f7=f[nxb*nyb-nxb-1-1].f5;
 	// Southwest corner bounce-back
-	f[0].f5=z[nxb+1].f7;
+	f[0].f5=f[nxb+1].f7;
 	// Southeast corner bounce-back
-	f[nxb-1].f6=z[nxb+nxb-1-1].f8;
-	delete [] z;
+	f[nxb-1].f6=f[nxb+nxb-1-1].f8;
 }
 
-/** Mixed boundary condition.
+/** Open boundary condition.
  *  West inlet, east inlet.
- *  North no-slip, south no-slip.  */
-void lbm::mbc() {
+ *  North no-slip, south no-slip. */
+void lbm::obc() {
 	// West inlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb;
-		f[k].f1=f[k+1].f1;
-		f[k].f5=f[k+1].f5;
-		f[k].f8=f[k+1].f8;
+		f[k].equilibrium();
+		f[k].f1=f[k].feq1;
+		f[k].f5=f[k].feq1;
+		f[k].f8=f[k].feq1;
 	}
 	// East outlet
+	// This version imposes pressure at the outlet
+	// Hence no flux condition normal to the wall is not implemented
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb+nx+1;
 		f[k].f3=f[k-1].f3;
@@ -163,6 +164,7 @@ void lbm::mbc() {
 	f[0].f5=f[nxb+1].f7;
 	// Southeast corner bounce-back
 	f[nxb-1].f6=f[nxb+nxb-1-1].f8;
+
 	init_poiseuille();
 }
 
@@ -248,17 +250,6 @@ void lbm::obstacle(int i,int jbot,int jtop) {
 	f[jbot*nxb+i].f7=f[jbot*nxb+i-nxb-1].f5;
 }
 
-/** Initialize routine called in main file.
- * \param[in] macro_rho the macrosopic density.
- * \param[in] macro_ux the macrosopic velocity in the x direction.
- * \param[in] macro_uy the macrosopic velocity in the y direction. */
-void lbm::initialize(double macro_rho,double macro_ux,double macro_uy,int flowtype) {
-	init_hydro(macro_rho,macro_ux,macro_uy);
-	init_flow(flowtype);
-	equilibrium();
-	init_pop();
-}
-
 /** Set up the shape of the channel custom to the problem. 
  * \param[in] w the width of the narrowing.
  * \param[in] l the length of the narrowing. */
@@ -285,6 +276,17 @@ void lbm::set_channel(int w,int l) {
 		f[k].f5=f[k+nxb+1].f7;
 		f[k].f6=f[k+nxb-1].f8;
 	}
+}
+
+/** Initialize routine called in main file.
+ * \param[in] macro_rho the macrosopic density.
+ * \param[in] macro_ux the macrosopic velocity in the x direction.
+ * \param[in] macro_uy the macrosopic velocity in the y direction. */
+void lbm::initialize(double macro_rho,double macro_ux,double macro_uy,int flowtype) {
+	init_hydro(macro_rho,macro_ux,macro_uy);
+	init_flow(flowtype);
+	equilibrium();
+	init_pop();
 }
 
 /** Main solver to step forward in time using the lattice Boltzmann method.
