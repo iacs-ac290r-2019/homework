@@ -1,0 +1,54 @@
+Our solution to this problem can be found in the folder \tty{hw2/lbm\_7}
+in our team's repository for this course.  
+Here is a brief overview of the components in our solution. \\
+
+The file \tty{lattice.hh} declares and implements the class \tty{lattice}
+(that is, it's a header-only implementation).  
+One instance of this class represents a single point on the lattice.
+It keeps track of populations $f_0$ through $f_8$ and their equilibrium values. 
+It also tracks the hydrodynamic values $\rho$, $u_x$, $u_y$ and $p$ (pressure).
+The function  \tty{hydro} computes the hydodynamic variables as a function of the populations.
+The function \tty{equilibrium} computes the equilibrium populations as a function of the hydrodynamic macro quantities.
+The function \tty{collide} does the post-collision update, relaxing each population towards the equilibrium.
+The parameter \tty{tau} controls the rate of relaxation to equilibrium.
+As we learned in class, there is a linear relationship between $\tau$ and the kinematic viscosity $\nu$, namely
+$$\nu = \frac{2\tau-1}{6}.$$
+
+The files \tty{lbm.hh} and \tty{lbm.cc} declare and implement the class that builds
+the overall lattice Boltzmann grid.  
+This class has member variables tracking the parameter values for the simulation, including
+the Reynolds Number \tty{Re}, the relaxation time $\tau$, 
+the kinematic viscosity $\nu$, and the length scale \tty{D}.  
+The number of grid points in the x and y directions are \tty{nx} and \tty{ny}.
+We use the strategy recommended by Sauro Succi and include buffers around the outside.
+We chose direct addressing rather than indirect addressing for this problem because the
+grid is rectilinear and dense.
+The biggest member variable is a pointer to an array of lattice objects, named \tty{f}.
+There is also a Boolean array of obstacle indicators \tty{obs}, which would be used as a flag to indicate whether this lattice is a fluid or a solid. \\
+
+The initialization routines parallel the lattice class and Sauro's scheme, including \tty{initialize}, \tty{init\_hydro}, \tty{init\_flow}, \tty{init\_poiseuille} and \tty{init\_pop}. The solver is methods include the following:
+\tty{solve}, \tty{bc}, \tty{pbc}, \tty{mbc}, \tty{stream}, \tty{hydro},
+\tty{equilibrium}, \tty{collide}, \tty{force}, \tty{obstacle}, and \tty{set\_channel}.
+The post-processing methods are \tty{set\_dir} and \tty{output}. \\
+
+The driver programs are \tty{lbm\_pbc} and \tty{pbm\_mbc}.  
+These handle the periodic boundary condition (applying a body acceleration) and mixed boundary condition (applying a uniform velocity), respectively.
+There isn't too much happening in the driver programs; 
+the heavy lifting is done in the \tty{lattice} and \tty{lbm} classes.
+Each driver sets up the main problem instance, solves it, and writes the output.
+They then enter a loop where different widths $w$ are simulated, 
+for $w$ in the range $10, 20, 30, 40, 50$.
+In the periodic boundary driver \tty{lbm\_pbc} only, 
+we also have an additional loop over relaxation times $\tau$ 
+in the range 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00.
+These correspond to kinematic viscosities in the range 0.05 to 0.1667
+and address the last part of question 1. \\
+
+Finally a good deal of post-processing is done in a Jupyter notebook called \tty{viz.ipynb}.
+This started out limited to visualization, but we also compute 
+some summary statistics asked for below.  
+The common approach is to open a directory of frames containing one simulation run.
+Typically we use only the last frame, to answer questions about the end of the 
+simulation which should be close to steady state. \\
+
+In the Appendix A we provide a comparison between our LBM solver on the Poiseuille flow with analytical solution to prove the validity of our solver.
