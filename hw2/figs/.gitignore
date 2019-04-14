@@ -1,0 +1,4 @@
+# macOS
+.DS_Store
+# Movie frames and movies
+!*.png
