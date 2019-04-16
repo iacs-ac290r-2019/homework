@@ -54,9 +54,9 @@ void lbm::init_flow(int flowtype) {
 /** Initialize Poiseuille flow. */
 void lbm::init_poiseuille() {
 	for(int j=1;j<=ny;j++) {
-		f[j*nxb].rho=1+11./5000000/3600;
-		// f[j*nxb+1].ux=Re*nu/D;
-		f[(j+1)*nxb-1].rho=1-11./5000000/3600;
+		// f[j*nxb].rho=1+0.015;
+		f[j*nxb+1].ux=Re*nu/D;
+		// f[(j+1)*nxb-1].rho=1-0.015;
 	}
 }
 
@@ -125,6 +125,7 @@ void lbm::pbc() {
  *  West inlet, east inlet.
  *  North no-slip, south no-slip. */
 void lbm::obc() {
+	init_poiseuille();
 	// West inlet
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb;
@@ -138,9 +139,14 @@ void lbm::obc() {
 	// Hence no flux condition normal to the wall is not implemented
 	for(int j=1;j<=ny;j++) {
 		int k=j*nxb+nx+1;
-		f[k].f3=f[k-1].f3;
-		f[k].f6=f[k-1].f6;
-		f[k].f7=f[k-1].f7;
+		double uin=Re*nu/D;
+		double r=1.+4*(f[k].ux-uin)/(1.-2*f[k].ux);
+		f[k].f3=f[k].f1*r;
+		f[k].f6=f[k].f8*r;
+		f[k].f7=f[k].f5*r;
+		// f[k].f3=f[k-1].f3;
+		// f[k].f6=f[k-1].f6;
+		// f[k].f7=f[k-1].f7;
 	}
 	// North solid
 	for(int i=1;i<=nx;i++) {
@@ -164,8 +170,6 @@ void lbm::obc() {
 	f[0].f5=f[nxb+1].f7;
 	// Southeast corner bounce-back
 	f[nxb-1].f6=f[nxb+nxb-1-1].f8;
-
-	init_poiseuille();
 }
 
 
