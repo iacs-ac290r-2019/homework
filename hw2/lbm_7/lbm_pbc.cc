@@ -61,7 +61,7 @@ int main() {
     // Run multiple passes for different kinematic viscosities nu
     // nu = (2*tau-1)/6 so tau = (6*nu+1)/2
     // To get nu between 0.05 and 0.1667, need tau betwee 0.65 and 1.0
-    for (int tau_i = 65; tau_i <= 100; tau += 5)
+    for (int tau_i = 65; tau_i <= 100; tau_i += 5)
     {
         // The "real" tau is tau_i / 100; use an integer in the loop for convenience
         double tau = double(tau_i) / 100.0;
@@ -78,6 +78,6 @@ int main() {
         // Call initialization functions to create simulation region and set up the initial condition
         fl.initialize(1.,0.,0.,flowtype);
         fl.solve(10000,100,bctype,forcetype,w,l);
-        printf("Ran for 10000 iterations with tau=%gf. Saved output every 100 frames. Finished!\n", tau);
+        printf("Ran for 10000 iterations with tau=%d. Saved output every 100 frames. Finished!\n", tau_i);
     }
 }
