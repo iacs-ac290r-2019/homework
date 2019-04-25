@@ -1,0 +1,15 @@
+**Hemodynamics Project Work Plan**
+
+* Submit jobs and monitor progress [Yue]
+* Convert VTK .vtu files into Numpy arrays.  Follow format similar to Rayleigh-Benard Convection project. [JGB]
+* Compute drug delivery q(t) [MSE]
+* Plot q(t) [MSE]
+* Plot velocity field v(z, t) [MSE]
+* Visuals for velocity field at selected z and t [MSE]
+* Visualize red blood cells tumbling (still image) [Yue]
+* Compute bolus function B(z, t) [TBD]
+* Visuals for bolus at select points [TBD]
+* [Optional] Movie of how fluids evolve; must show drug concentration, red blood cells options [Yue]
+* [Optional] Schlieren visualization [TBD, time permitting]
+* Report; [MSE first draft; rest of team revisions]
+* Presentation; [TBD; adapted from report]
