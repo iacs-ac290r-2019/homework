@@ -71,8 +71,32 @@ def drug_delivery(frame_num):
     drug_tot = np.sum(drug)
     return (drug_sten, drug_tot)
 
+def calc_drug(frame_nums):
+    """Compute the drug quantity (stenotic and total) at each frame"""
+    # Number of frame
+    frame_count = len(frame_nums)
+    # Preallocate storage for drug in stenotic region and whole system
+    drug_sten = np.zeros(frame_count)
+    drug_tot = np.zeros(frame_count)
+
+    # Compute drug at each available frame and save it to arrays
+    for i, frame_num in enumerate(frame_nums):
+        # Drug delivery for this frame
+        sten, tot = drug_delivery(frame_num)
+        # Save to two arrays
+        drug_tot[i] = tot
+        drug_sten[i] = sten
+    
+    # Compute the drug fraction in the stenotic region
+    drug_frac = drug_sten / drug_tot
+    
+    return drug_sten, drug_tot, drug_frac
+
 def plot_drug(drug_tot, drug_frac, frame_time):
     """Create two plots with drug quantity over time"""
+    # Compute volume fraction in the stenotic region
+    vol_frac = vol_sten / vol_tot
+    
     # Plot 1: Total Drug in System (Quality Check)
     fig, ax = plt.subplots(figsize=[16,9])
     ax.set_title('Total Drug vs. Time')
@@ -87,12 +111,16 @@ def plot_drug(drug_tot, drug_frac, frame_time):
         
     # Plot 2: Fraction of Drug Delivered
     fig, ax = plt.subplots(figsize=[16,9])
-    ax.set_title('Drug Delivery vs. Time')
+    ax.set_title('Drug Delivery Fraction vs. Time')
     ax.set_xlabel('Time in Milliseconds')
-    ax.set_ylabel('Drug Delivery Fraction')
-    ax.set_ylim(0.00, 0.025)
-    ax.plot(frame_time, drug_frac, color='b', linewidth=3.0, marker='o', markersize=10, label='Drug Fraction')
+    ax.set_ylabel('Drug Delivery \%')
+    ax.set_ylim(0.0, 3.0)
+    ax.plot(frame_time, drug_frac*100, color='b', linewidth=3.0, marker='o', markersize=10, label='Drug \%')
+    # second series is a baseline; what fraction of the volume is in the stenotic region?
+    vol_frac_vec = vol_frac*100*np.ones_like(frame_time)
+    ax.plot(frame_time, vol_frac_vec, color='r', linewidth=3.0,label='Volume \%')
     ax.grid()
+    ax.legend()
     # Save figure
     fname_frac = os.path.join(dir_fig, 'drug_frac.png')
     fig.savefig(fname_frac, bbox_inches='tight')
@@ -132,8 +160,14 @@ x = cell_pos[:, 0]
 y = cell_pos[:, 1]
 z = cell_pos[:, 2]
 
+# Total volume of the simulation
+vol_tot = np.sum(cell_vol)
+
 # Mask for stenotic region
 mask_sten = (sten_beg <= z) & (z < sten_end)
+
+# Volume in the stenotic region
+vol_sten = np.sum(cell_vol[mask_sten])
 
 # List of available frames
 frame_nums = frames_avail(dir_np)
@@ -145,18 +179,14 @@ frame_count = len(frame_nums)
 # Set plot style
 plot_style()
 
-# Compute the drug quantity (stenotic and total) at each frame
-drug_sten = np.zeros(frame_count)
-drug_tot = np.zeros(frame_count)
-for i, frame_num in enumerate(frame_nums):
-    # Drug delivery for this frame
-    sten, tot = drug_delivery(frame_num)
-    # Save to two arrays
-    drug_tot[i] = tot
-    drug_sten[i] = sten
-
-# Compute the drug fraction
-drug_frac = drug_sten / drug_tot
+# Calculate drug quantity vs. time
+drug_sten, drug_tot, drug_frac = calc_drug(frame_nums)
 
 # Plot the total amount of drug and delivery fraction vs. timef
 plot_drug(drug_tot, drug_frac, frame_time)
+
+# Status update
+d_min = np.min(drug_tot)
+d_max = np.max(drug_tot)
+d_chng_pct = (d_max - d_min) / d_min * 100
+print(f'Change in total drug quantity over simulation: {d_chng_pct:0.2f}%')
