@@ -11,6 +11,13 @@
 # Large exodus data files
 *.exo
 
+# Large VTK files
+*.vtu
+*.pvtu
+
+# Large numpy data arrays
+*.npy
+
 # Movie frames and movies
 *.png
 *.mp4
