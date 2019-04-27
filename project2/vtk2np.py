@@ -15,7 +15,7 @@ import tqdm
 # *********************************************************************************************************************
 def load_frame_pos(frame_num, dir_abs):
     """
-    Load all available data for a frame number and specified directory (blood or drug).
+    Load position data for a frame number and specified directory (blood or drug).
     INPUTS:
     frame_num: the frame number to load, e.g. 100000
     dir_abs: the absolute directory of data to load, e.g. 
@@ -26,14 +26,18 @@ def load_frame_pos(frame_num, dir_abs):
     # Read this file with VTKI
     ds = vtki.read(filename)
     # Extract the points
-    points = np.array(ds.points)
+    point_pos = np.array(ds.points)
+    # Extract the center of each cell
+    cell_pos = ds.cell_centers().points
+    # Compute the volume of each cell
+    cell_vol = ds.compute_cell_sizes().cell_arrays['Volume'].astype(np.float32)
 
     # Return the points grid
-    return points
+    return point_pos, cell_pos, cell_vol
 
 def load_frame_type(frame_num, dir_abs):
     """
-    Load all available data for a frame number and specified directory (blood or drug).
+    Load the VTKI grid object for a frame number and specified directory (blood or drug).
     INPUTS:
     frame_num: the frame number to load, e.g. 100000
     dir_abs: the absolute directory of data to load, e.g. 
@@ -43,33 +47,37 @@ def load_frame_type(frame_num, dir_abs):
     filename = os.path.join(dir_abs, f'T{frame_num:010}.pvtu')
     # Read this file with VTKI
     ds = vtki.read(filename)
-    # Extract the velocity and density
-    density = ds.point_arrays['density']
-    velocity = ds.point_arrays['velocity']
-
-    # Return the points grid, density and velocity (mapped to points)
-    return (density, velocity)
-
+    return ds
+    
 def load_frame_vtu(frame_num):
-    """Load all data for this frame (blood and drug) from vtu files"""
-    # Extract blood data for this frame; note that the position is the same for blood and drug
-    rho_b, vel_b = load_frame_type(frame_num, dir_blood)
+    """Load field data for this frame (blood and drug) from vtu files"""
+    # Get the blood data from VTKI
+    ds_blood = load_frame_type(frame_num, dir_blood)
+
+    # Extract the velocity and density keyed by cell (not point!)
+    # density = ds.point_arrays['density']
+    # velocity = ds.point_arrays['velocity']
+    rho = ds_blood.cell_arrays['density']
+    vel = ds_blood.cell_arrays['velocity']
+
     # Extract drug data for the frame
-    rho_d, vel_d = load_frame_type(frame_num, dir_drug)
+    ds_drug = load_frame_type(frame_num, dir_drug)
+    # Extract the density of the drug by cell; this is in the confusingly named field temperature
+    drug = ds_drug.cell_arrays['temperature']
+    
     # Return a tuple of 4 elements: velocity and density for blood and drug
-    return (vel_b, rho_d, vel_d, rho_d)
+    return (rho, vel, drug)
 
 def save_frame(frame_num, dir_np):
     """Load frame from VTU, save it as numpy array"""
     # Convert from VTU to numpy arrays
-    rho_b, vel_b, rho_d, vel_d = load_frame_vtu(frame_num)
+    rho, vel, drug = load_frame_vtu(frame_num)
     
     # Table of arrays and corresponding file name prefixes
     file_tbl = {
-        'rho_b': rho_b,
-        'vel_b': vel_b,
-        'rho_d': rho_d,
-        'vel_d': vel_d
+        'rho': rho,
+        'vel': vel,
+        'drug': drug
         }
     
     # Save each grid as a numpy array
@@ -89,17 +97,28 @@ def save_frames(dir_np):
     basenames = [os.path.basename(filename) for filename in filenames]
     frame_nums = [int(basename.split('.')[0][-7:]) for basename in basenames]
 
-    # Get the points from the first frame
+    # Get the position for points and cells from the first frame
     frame_num = frame_nums[0]
-    pos = load_frame_pos(frame_num, dir_blood)
-    # Save the points grid
-    fname_pos = os.path.join(dir_np, 'pos.npy')
-    np.save(fname_pos, pos)
+    point_pos, cell_pos, cell_vol = load_frame_pos(frame_num, dir_blood)
+
+    # Save the point positions
+    fname_point_pos = os.path.join(dir_np, 'point_pos.npy')
+    np.save(fname_point_pos, point_pos)
+    # Save the cell positions
+    fname_cell_pos = os.path.join(dir_np, 'cell_pos.npy')
+    np.save(fname_cell_pos, cell_pos)
+    # Save the cell volumes
+    fname_cell_vol = os.path.join(dir_np, 'cell_vol.npy')
+    np.save(fname_cell_vol, cell_vol)
+    
+    # Set interval; can't take all frames, too slow
+    interval = 10000
     
     # Iterate over frame numbers, saving numpy arrays for each one
-    for frame_num in tqdm.tqdm(frame_nums[0:1]):
-        save_frame(frame_num, dir_np)
-        print(f'Completed frame {frame_num:7}.')
+    for frame_num in tqdm.tqdm(frame_nums):
+        if frame_num % interval == 0:
+            save_frame(frame_num, dir_np)
+            print(f'Completed frame {frame_num:7}.')
 
 # *********************************************************************************************************************
 # The root directory
@@ -115,6 +134,8 @@ dir_np_rel = 'Numpy'
 dir_blood = os.path.join(dir_root, dir_blood_rel)   
 dir_drug = os.path.join(dir_root, dir_drug_rel)   
 dir_np = os.path.join(dir_root, dir_np_rel)   
+    
+if __name__ == '__main__':
+    # Save all the frames
+    save_frames(dir_np)
 
-# Save all the frames
-save_frames(dir_np)
