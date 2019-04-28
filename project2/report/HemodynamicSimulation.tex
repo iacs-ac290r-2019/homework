@@ -350,24 +350,130 @@ In order to invoke the job as a Python 2 script with MPI, the
 line of the script that kicks off the actual job is\\
 \tty{srun -n \$SLURM\_NTASKS --mpi=pmi2 python2 run2.py}
 
-\section{Parameters of the Simulation}
+The last major batch of code we wrote performs calculations at the post-processing stage.
+This is in two Python scripts \tty{vtk2np.py} and \tty{rbc.py} located in the folder \tty{project2/src}.
+The MUPHY simulation generates output in the form of VTK files with the extensions .vtu and .pvtu.
+These files are well suited to visualization, especially intensive visualizations like movies.
+For computations and 2D plots of one time instant, we find it more convenient to use 
+\tty{numpy} and \tty{matplotlib}.
+
+We made a strategic decision to do the computationally heavy graphics rendering remotely on Odyssey
+but to do the computations and 2D ploting locally on a few selected time frames.
+After our baseline simulation ran, we downloaded snapshots every 100,000 frames from 100,000 to 1,000,000.
+Each time step corresponds to 1 microsecond, so these frames were 100 milliseconds apart for
+the first 1.0 second of the simulation.  
+These files weren't too large, with a total size of about 9 GB each for the blood and drug for a total of 18 GB.
+Downloading these files was a bit painful though because SFTP connections to Odyssey 
+are considerably slower than data downloads from large commercial websites for whatever reason.
+
+The script \tty{vtk2np.py} converts the VTK files to numpy arrays using the library \tty{vtki}.
+\tty{vtki} has a nice feature making it possible to read a .pvtu file.  
+A .pvtu file is essentially a wrapper around a number of .vtu files, each with one part of a larger mesh.  
+In our case, we ran on 512 nodes and each time step generated 512 .vtu files that were summarized by 1 .pvtu file.  
+These outputs were generated for both blood and the drug.
+The VTK files include data that is keyed both by \textit{points} and \textit{cells} on the mesh.
+These are not the same! Our mesh for $Re=10$ had 7,022,647 cells and 8,578,503 points.
+One important optimization is to realize that the geometric layout of the mesh does not change between frames.  
+While the files contain the whole grid every time, it is only necessary to save the point and cell position data once.  
+Only the density, velocity, and shear stress change over frames.
+
+\tty{vtk2np.py} extracts and saves the following data from the VTK files as Numpy arrays:
 \begin{itemize}
-\item $\nu$ = 0.1
-\item $\rho$ = 1
-\item NSTEP = 1000000
-\item NDIAG = 100
-\item NVTKFREQ = 1000
-\item $\bar{u}$ = 0.01
-\item Re = 10.0
-\item Pe = 10.0
-\item C0 = 0.01
-\item C1 = 1.0
-\item UNFREEZE\_TIME = 100000
-\item R = $\frac{Re * NU}{2  \bar{u}}$
-\item DIFFUSIVITY = $\frac{\bar{u} * R}{Pe}$
+\item \tty{point\_pos.npy} - the (x, y, z) position of each point on the mesh
+\item \tty{cell\_pos.npy} - the (x, y, z) position of each cell center of the mesh
+\item \tty{cell\_vol.npy} - the volume of each cell in the mesh
+\item \tty{drug\_framenum.npy} - the volume of the drug in each cell of the mesh at this frame
+\item \tty{drug\_point\_framenum.npy} - the volume of the drug at each point on the mesh at this frame
+\item \tty{vel\_framenum.npy} - the blood velocity at each point on the mesh at this frame
+\item \tty{vel\_cell\_framenum.npy} - the blood velocity at each cell on the mesh at this frame
+\item \tty{rho\_framenum.npy} - the blood density at each cell on the mesh; proportional to pressure
+\end{itemize}
+This program was run once locally to create numpy arrays, allowing the
+next Python program to run without worrking about VTK data structures.
+
+\tty{rbc.py} performs all the requested calculations and generates the 2D plots presented 
+below that were not generated remotely using Paraview. \\
+\tty{drug\_delivery} answers the headline question of how much drug is in the stenotic
+region as a function of time.  
+We estimated this by summing up the density of drug in the cells in the stenotic region.
+We extracted the velocity of each cell and found that they were all equal to 1.
+(We knew that the interior cells should have a volume of 1 because they were cubes
+with side length 1, but didn't know how MUPHY and VTK handle cubes on the boundary.)
+The total amount of drug present in a region $\Omega$ is $\int_{\Omega} \rho dV$
+i.e. the density integrated with respect to infinitesimal volume slices.
+Therefore discrete analog would be to sum up the density of each cell in the stenotic region multiplied by its volume.  
+Since all the cell volumes are equal to 1, we omitted the multiplication from the calculation to improve performance.
+We also computed the total quantity of drug in the system as a quality check, expecting it not to change.\\
+\tty{plot\_speed\_contour} creates a contour plot of the speed on a cross sectional slize $z=z_{plot}$.
+While we computed drug quantities using cells, we chose to plot speed using points.
+The main programming challenge is generating a contour for data that doesn't cover an entire rectangular grid.
+This was done by creating an augmented grid with the full square cross section containing
+the circular cross section of the artery.
+Grid points outside of the artery were marked with a speed of 0, which was exlcuded from the
+range of values in the contour.\\
+\tty{plot\_streamlines} plots streamlines of the velocity in the $xy$ plane
+(i.e. velocity components $u$ and $v$) on a cross-sectional slice $z=z_{plot}$.
+Like the speed contour, this plot uses points rather than cells.
+It uses the same technique as \tty{plot\_speed} for padding the circular region
+with dummy entries that don't appear on the plot.
+Streamlines are plotted with a width proportional to their speed in the $xy$ plane.\\
+\tty{plot\_drug\_conc} plots the concentration of the drug on a cross sectional slice $z=z_plot$.
+This plot uses cell data.  
+A mask is created using the relationship that $z$ at the center of a cell is equal to 
+$z$ at the start of the cell plus $\frac{1}{2}$.  
+This was preserved exactly by VTK so we could create a logical mask efficiently.
+The conentration of drug at each $(x, y)$ point is then read right off the masked array.\\
+\tty{plot\_drug\_profile} plots the ``profile'' of the drug along the $z$ axis for a given time.
+This calculation is also based on cells.  
+A mask is created for each value of $z$ as before, and the total amount of drug 
+at this longitude is estimated as the sum of the drug concentration array on the mask.
+An initial attempt at plotting this profile showed some obvious artifacts where 
+a handful of $z$ values had ``holes'' where the dropped well below their neighbors.
+We appplied a smoothing operation before plotting the profile $B(z)$ in which 
+we set each $b_z$ equal to the max of itself and its two neighbors $b_{z-1}$ and $b_{z+1}$.\\
+Plots of each type are displayed below in the Results section.
+
+\section{Parameters of the Simulation}
+These are the parameter values that we set at the start of the Python script for the baseline simulation
+with 0 red blood cells and a Reynold Number of 10.
+\begin{itemize}
+\item $\nu$ = 0.1 - this is the kinematic viscosity
+\item $\rho$ = 1 - the blood density wsa set to 1 by convention
+\item $\bar{u}$ = 0.01 - this is the mean speed of the blood
+\item Re = 10.0 - the Reynolds number is dimensionless and characterize the turbulence / regularity of the flow
+\item Pe = 10.0 - the Pectet number is dimensionless and characterizes the importance of radial to axial diffusion
+\item R = $\nicefrac{Re * \nu}{2  \bar{u}}$ - the radius is implied by Reynolds number and velocity
+\item DIFFUSIVITY = $\frac{\bar{u} * R}{Pe}$ \colorbox{yellow}{SAY SOMETHING HERE}
+\item C0 = 0.01 - the baseline drug concentration away from the bolus
+\item C1 = 1.0 - the high drug concentration on the bolus at $t=0$
+\item NSTEP = 1000000 - total number of simulation steps; each step is one microsecond
+\item NDIAG = 100 - interval between diagnostics
+\item NVTKFREQ = 1000 - interval between VTK output frames
+\item UNFREEZE\_TIME = 100000 - number of time stepss for the system to equilibrate before drug release
 \end{itemize}
 
+Our goal was to also run a big simulation.  
+This was to be similar to the baseline, but would also include a large number of red blood cells.
+These red blood cells would be simulated as rigid particles with a position and orientation.
+Including the red blood cells makes the simulation more physiologically realistic,
+with increasing importance the narrower a blood vessel is.
+Our initial attempt was a 30\% hematocrit with otherwise identical parameters to the baseline case.  
+Unfortunately multiple attempts to simulate the system with large numbers of red blood cells failed.
+We will explain in detail the various failures and their causes in the section below.
+Fortunately, we did complete a successful run of the baseline case without red blood cells.
+We have made the best of a difficult situation by perofrming a complete analysis on the baseline case.
+
 \section{Results}
+
+\subsection{Failed Runs on Odyssey with Red Blood Cells}
+
+\subsection{Drug Delivery Over Time}
+
+\subsection{Velocity Field - Contours of Speed and Streamlines}
+
+\subsection{Drug Concentration - Contours}
+
+\subsection{Longitudinal Drug Profile vs. Time}
 
 \section{Conclusions and Future Work}
 
