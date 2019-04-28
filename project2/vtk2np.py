@@ -56,9 +56,12 @@ def load_frame_vtu(frame_num):
 
     # Extract the velocity and density keyed by cell (not point!)
     # density = ds.point_arrays['density']
-    # velocity = ds.point_arrays['velocity']
+    # Get the velocity vel at POINTS
+    vel = ds_blood.point_arrays['velocity']
+    
+    # Get the density rho at CELLS
     rho = ds_blood.cell_arrays['density']
-    vel = ds_blood.cell_arrays['velocity']
+    # vel = ds_blood.cell_arrays['velocity']
 
     # Extract drug data for the frame
     ds_drug = load_frame_type(frame_num, dir_drug)
