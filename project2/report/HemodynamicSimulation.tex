@@ -99,6 +99,7 @@ look risky, and there is reason for optimism that advances in biologically reali
 simulations could lead to materially faster and more accurate diagnosis 
 and improve treatement selections.
 
+\newpage
 \section{Overview of Numerical Methods Used}
 The main numerical method used in this simulation is the Lattice Boltzmann Method (LBM).
 LBM is based on the \href{https://en.wikipedia.org/wiki/Boltzmann_equation}{Boltzmann Equation},
@@ -242,7 +243,36 @@ For the simulation we ran of an artery, we imposed a non-slip boundary condition
 side walls of the artery, and a periodic boundary condition on the longitudinal direction,
 effectively modeling a longer artery with periodic stenoses.
 
+\newpage
 \section{Description of Code}
+The workhorse of this simulation is a Lattice Boltzmann fliud simulator called MUPHY.
+MUPHY is about 10 years and designed for multi-physics simulations.
+We also used a newer software package called MOEBIUS.
+MUPHY is an open source project on which our guest instructor Simone Melchionna
+was one of the lead developers
+MOEBIUS is a commercial package developed by a private company,
+Lexma, founded by Dr. Melchionna.
+
+MUPHY and MOEBIUS (hereafter referred to simply as MUPHY to save space) follow a similar strategy to Drekar.  
+They are object oriented written primarily in a mix of C / C++ and Fortran, with GPU acceleration written in Cuda.
+The back end is implemented in lower level languages like C / C++  to meet the requirements for high performance.
+Another similarity to Drekar is that parallelization is proved using OpenMP.
+There is also a front end interface for managing jobs.  This is written in Python.
+To run our simulations, we needed to install the MUPHY package and write
+scripts in Python.  We did not need to write or compile and C++ or Cuda.
+
+MUPHY was written with a particular focus on applications in life sciences.
+It can handle the complex geometries arising in biological systems, ranging in scales
+from folding proteins and cell membranes up to highly branched arteries.
+We saw demonstrations in class run on MUPHY of a DNA molecule passing through
+a cell membrane, and of a flow simulation in arteries whose geometry was
+based on a patient.
+
+The first code we wrote is in the file \tty{ShapePainter.py}.
+This code can be found in a repository named BUFFY our team created on Odyssey.
+We needed to fork the MUPHY repository so we could make edits and push changes.
+We named it BUFFY in homage to the hit TV show 
+\href{https://en.wikipedia.org/wiki/Buffy_the_Vampire_Slayer}{Buffy the Vampire Slayer}.
 
 \section{Parameters of the Simulation}
 

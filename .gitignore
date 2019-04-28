@@ -23,6 +23,10 @@
 *.mp4
 *.mp3
 
+# Ignore the BUFFY directory in project 2
+# Manually add a handful of important files
+project2/BUFFY
+
 # Doxygen build directories
 hw1/html
 hw1/latex
