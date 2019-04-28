@@ -1,0 +1,120 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+% Common packages for mathematical articles
+\usepackage{fullpage,amsmath,amsfonts,mathpazo,microtype,nicefrac,algorithm2e,graphicx}
+
+% MSE Packages
+\usepackage{caption}
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{parskip}
+
+% MSE Make margins a bit smaller
+\usepackage[margin=0.75in]{geometry}
+\usepackage[font=footnotesize]{caption}
+
+% MSE set graphics path
+\graphicspath{{figs/}}
+
+% Set-up for hypertext references
+\usepackage{hyperref,color,textcomp}
+\definecolor{webgreen}{rgb}{0,.35,0}
+\definecolor{webbrown}{rgb}{.6,0,0}
+\definecolor{RoyalBlue}{rgb}{0,0,0.9}
+\hypersetup{
+   colorlinks=true, linktocpage=true, pdfstartpage=3, pdfstartview=FitV,
+   breaklinks=true, pdfpagemode=UseNone, pageanchor=true, pdfpagemode=UseOutlines,
+   plainpages=false, bookmarksnumbered, bookmarksopen=true, bookmarksopenlevel=1,
+   hypertexnames=true, pdfhighlight=/O,
+   urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen,
+   pdfsubject={Harvard IACS AC 290 R},
+   pdfkeywords={},
+   pdfcreator={pdfLaTeX},
+   pdfproducer={LaTeX with hyperref}
+}
+\hypersetup{pdftitle={AC290-RBC}}
+
+
+% MSE Macros
+\newcommand{\tty}[1]{\texttt{#1}}
+\newcommand{\uu}{\vectorbold{u}}
+\newcommand{\vv}{\vectorbold{u}}
+\newcommand{\Laplace}{\Delta}
+
+%***Start of Document***
+\title{Hemodynamic Simulation with Lattice Boltzman}
+\author{Harvard IACS AC 290R - Group 1 \\
+Michael S. Emanuel \\
+Jonathan Guillotte-Blouin \\
+Yue Sun \\
+}
+\date{28-April-2019} 
+
+\begin{document}
+\maketitle
+
+\section{Problem Statement and Motivation}
+AC 290R is a course on extreme computing with a focus on the application domain of fluid dynamics.
+In our first module we attempted a prototypical problem using the continuum description of fluids
+governed by the Navier-Stokes equation: 
+\href{https://en.wikipedia.org/wiki/Rayleigh%E2%80%93B%C3%A9nard_convection}{Rayleigh-B\'enard Convection}.
+In this module, we shift from the continuum to the mesoscale description and simulate fluids using  
+\href{https://en.wikipedia.org/wiki/Lattice_Boltzmann_methods}{Lattice Boltzmann} methods.  
+These methods are based on the Boltzmann Equation of thermodynamics and statistical physics.
+
+The particular task we we undertook was a hemodynamic simulation.
+\href{https://en.wikipedia.org/wiki/Hemodynamics}{Hemodynamics} is the study of the dynamics flow blood.  
+It is a rich field at the intersection of anatomy and physics with a storied history.
+Pioneers in the field have included 
+\href{https://en.wikipedia.org/wiki/Leonardo_da_Vinci}{Leonardo Da Vinci}, 
+\href{https://en.wikipedia.org/wiki/Leonhard_Euler}{Leonhard Euler,} 
+\href{https://en.wikipedia.org/wiki/Thomas_Young_(scientist)}{Thomas Young}, and 
+\href{https://en.wikipedia.org/wiki/Jean_L%C3%A9onard_Marie_Poiseuille}{Jean L.M. Poieseuille}.
+
+The particular problem was as follows.  
+We aim to model the dispersion of a therapeutic drug that is injected with a catheter to treat a stenotic artery.
+Stenosis is a disease of the arteries in which an artery becomes narrowed.
+It is frequently caused by 
+\href{https://en.wikipedia.org/wiki/Atherosclerosis}{atherosclerosis}, 
+a build-up of fatty deposits (cholesterol) on the walls of the artery.
+Stenotic arteries can cause serious medical problems including heart attacks and strokes.
+One approach to treating stenoses is to introduce a therapeutic drug with a catheter,
+a small tube inserted surgically into the patient that can be threaded through the circular system.
+The goal of our simulation was to understand how the drug molecules dispersed 
+and to see how many of them passed through the stenotic region, and at what times.
+
+This is a worthwhile object of study for both pedagogical and practical reasons.
+Pedagogically, this topic rounds out our survey of both techniques and domain knowledge in the course.
+We are aiming to master the techniques of extreme computing and their application to fluid dynamics.
+The first topic covered the continuum approach, and this topic covers the mesoscale approach.
+The first topic used traditional CPU-centric computations, and this topic introduces us to GPU computing.
+
+On a practical level, \href{https://www.cdc.gov/heartdisease/facts.htm}{heart disease} 
+has been for many years a leading cause of death in Americans alongside cancer.
+It is a complex disease with many treatment options and a need for accurate diagnosis.
+Clinical practice still often relies on human judgment about which arterial blockages 
+look risky, and there is reason for optimism that advances in biologically realistic computer
+simulations could lead to materially faster and more accurate diagnosis 
+and improve treatement selections.
+
+\section{Description of Code}
+
+\section{Overview of Numerical Methods Used}
+
+\section{Parameters of the Simulation}
+
+\section{Results}
+
+\section{Conclusions and Future Work}
+
+%% bibliography
+
+\begin{thebibliography}{9}
+\bibitem{exo} 
+Succi, Sauro: The Lattice Boltmann Equation for Fluid Dynamics and Beyond
+
+\end{thebibliography}
+
+\end{document}
+
