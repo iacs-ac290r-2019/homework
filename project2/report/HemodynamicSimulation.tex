@@ -41,6 +41,7 @@
 \newcommand{\uu}{\vectorbold{u}}
 \newcommand{\vv}{\vectorbold{u}}
 \newcommand{\Laplace}{\Delta}
+\renewcommand{\vec}[1]{\mathbf{#1}}
 
 %***Start of Document***
 \title{Hemodynamic Simulation with Lattice Boltzman}
@@ -98,9 +99,150 @@ look risky, and there is reason for optimism that advances in biologically reali
 simulations could lead to materially faster and more accurate diagnosis 
 and improve treatement selections.
 
-\section{Description of Code}
-
 \section{Overview of Numerical Methods Used}
+The main numerical method used in this simulation is the Lattice Boltzmann Method (LBM).
+LBM is based on the \href{https://en.wikipedia.org/wiki/Boltzmann_equation}{Boltzmann Equation},
+which describes the statistical behavior of a thermodynamic system and dates to 1872.
+The idea behind the Boltzmann Equation is that particles in the system each have 6 degrees
+of freedom, 3 positions and 3 momenta along the 3 coordinate directions $x$, $y$ and $z$.
+Molecules of a given type are physically indistuinguishable from each other,
+so the system can be described completely by the populations of particles as a function
+of time and these six dimensions in the phase space.
+The Boltzmann Equation describes the evolution of such a system.
+The populations of particles change due to three terms: 
+forces applied to the system, diffusion, and collisions.
+
+LBM is a technique in computational fluid dynamics that uses the Boltzmann Equation
+to devise a numerical simulation of a fluid that can accurately capture mesoscale dynamics
+when it is tuned properly.
+The physical system is discretized, typically on a rectilinear grid 
+and most commonly one with cubic spacing.  
+Particle velocities are also discretized, with particles allowed to jump from
+from one grid point only to nearby grid points over one simulation step.
+The most common discretization scheme for 3D fluid simulations,
+which we used for this problem, is called D3Q19.
+The label can be parsed as referring to 3 dimensions and 19 discrete velocities.
+The 19 discrete velocities have the following structure:
+\begin{itemize}
+\item 1 $0^{th}$ neighbor; displacement $(0,0,0)$; weight $\frac{1}{3}$
+\item 6 $1^{st}$ neighbors; displacement one of 3 permutations of $(\pm 1, 0, 0)$; weight $\frac{1}{18}$
+\item 12 $2^{nd}$ neighbors; displacement one of 3 permutations of $\pm 1, \pm 1, 0)$; weight $\frac{1}{36}$
+\end{itemize}
+The 6 first neighbors have displacements $(1,0,0), (-1,0,0), (0,1,0), (0,-1,0), (0,0,1), (0,0,-1)$.
+The 12 second neighbors follow a similar pattern; there are ${3 \choose 2} = 3$ permutations of indices
+$i, j$, and each index has 2 choices in $\pm1$, leaving $4 \cdot 3 = 12$ second neighbors.
+The total weight of the 6 first neighbors is $6 \cdot \frac{1}{18} = \frac{1}{3}$.
+The total weight of the 12 second neighbors is $12 \cdot \frac{1}{36} = \frac{1}{3}$.
+
+The state of the simulation at a time step is given the \textit{population} of particles, 
+$f_p(x,t)$, where the suffix $p$ refers to the discrete velocities above.
+In a system with more than one type of particle, each populations of each particle must be maintained separately.  
+The movement of populations can be described by the Btatnagar-Gross-Krook update rule:
+$$f_p(x + hc_p, t + h) = f_p(x,t) + \omega(x,t) h \left[f_p^{eq}(\rho, \vec{u} - f_p)(x,t) + w_p \frac{c_p \cdot \vec{g}}{c_s^2} \right]$$
+Here is a brief description of all the terms appearing in this equation from left to right:
+\begin{itemize}
+\item $f_p$ is the actual population of the particle introduced above.
+\item h is the time step, often taken to be 1 in simplified notation
+\item $c_p$ is the displacement vector corresponding a given discrete velocity, e.g. \\
+$c_0 = (0,0,0)$,  $c_1 = (1,0,0)$, etc.
+\item $\omega$ is the relaxation frequency which is related to the kinematic viscosity $\nu$ (described below)
+\item $\rho(x,t)$ is the density of the fluid in this cell, a macroscopic quantity; essentially the 0th moment of the velocity
+\item $\vec{u}(x,t)$ is the velocity of the fluid in this cell, a macroscopic quantity; essentially the first moment of the velocity
+\item $w_p$ is the weight of particles with each velocity in the D3Q19 scheme; scalars that do not change over the simulation
+\item $c_p$ is the discrete velocity
+\item $\vec{g}$ is the acceleration applied to the body by external forces; the letter $g$ evokes gravity but it can be any external force
+\item $c_s$ is the speed of sound in dimensionless units on this lattice. 
+(The speed of sound of the physical medium depends on the gradient of pressure with respect to density).
+\end{itemize}
+
+The equilibrium populations can be approximated with a Taylor expansion that
+accounts for the 0th, 1st, and 2nd moments of the populations.
+$$f_p^{eq}(\rho, \vec{u}) = w_p \rho \left[1 + \frac{\vec{u} \cdot c_p}{c_2^2} + \frac{(\vec{u} \cdot c_p)^2 - c_s^2u^2}{2c_2^4} \right] $$
+The resulting $f_p^{eq}$ will match the first two moments (density $\rho$ and velocity $\vec{u}$),
+but in general it will $\textbf{not}$ match the second moment (energy density) unelss the system is at equilibrium.
+This is how energy dissipation in a viscous fluid away from equilibrium is modeled.
+This approximation is valid as long as the system is sufficiently close to equilibrium.
+If the parameters are not set properly, the populations can depart from equilibrium by too much
+and the simulation will break down.
+
+The macroscopic quantity density $\rho$ is simply the sum of the fluid populations in a cell.
+$$\rho(\vec{x}, t) = \sum_{p}f_p(\vec{x}, t)$$
+The momentum density is the first moment of the particle velocities.  
+This is equal to the density times the velocity in a cell, giving us the formula for $\vec{u}(\vec{x}, t)$:
+\begin{align*}
+\vec{J}(\vec{x}, t) &= \rho(\vec{x}, t) \vec{u}(\vec{x}, t) = \sum_{p}c_p f_p(\vec{x}, t) \\
+\vec{u}(\vec{x}, t) &= \frac{1}{\rho(\vec{x}, t)} \sum_{p}c_p f_p(\vec{x}, t)
+\end{align*}
+
+The relaxation frequency is related to the kinematic viscosity $\nu$ by the following relationship:
+$$ \nu = c_s^2 \left(\frac{1}{\omega} - \frac{1}{2}\right)$$
+
+A Lattice Boltzmann fluid simulation can be organized into two logical phases, 
+which are sometimes called \textit{collision} and \textit{streaming}.
+The collision step describes how particles populations in the same cell interact and 
+how their weights move toward their equilibrium values as a result of collisions.
+The intuition is that when particles hit each other, momentum is conserved, 
+but some kinetic energy is dissipated as heat or otherwise.
+The equation for the collision step can be written
+$$f_p^* = (1-\omega)f_p + \omega f_p^{eq}$$
+where $f_p^*$ are called the temporary post-collisional populations.
+We can think of these as the new populations one ``instant'' after the previous streaming step.
+
+The streaming step describes how particles of the post-collisional population move forward into the next time step.  
+This is very straightforward, the particles just move at their discrete velocities according to
+$$f_p(x + c_p, t+ 1) = f_p^*(x, t)$$
+A key fact is that streaming is a \textit{local} operation.  
+This makes it ideally suited to GPU computations, which excel at simple, highly parallel tasks with memory locality.
+
+Stability is an important concept in the numerical solution of differential equations generally.
+One of the best known stability criteria is the 
+\href{https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition}{Courant-Friedrichs-Lewy (CFL) Condition}.
+This relates the range of time steps $\Delta t$ for which a numerical method is stable to the spatial discretication $\delta x$,
+the speed of movement $u$, and a dimensionless constant that is a property of the numerical method.
+A rule of thumb for LBM is that optimal results are achieved when 
+$$|u| < \sqrt{\frac{2}{3}} \frac{\Delta x}{\Delta t}$$
+A representative value of $u$ is 0.1, leading to a guideline that stable results can be found when the
+kinematic viscosity $\nu$ is selected in the range $0.05 < \nu < 1$.
+
+Like any differential equation solution method, LBM must also cope with initial conditions and boundary conditions.
+Common initial conditions are prescribed values for the pressure (equivalent to a prescribed density)
+and velocity, i.e.
+\begin{align*}
+\rho(x, t=0) &= \rho_0(x) \\
+\vec{u}(x, t=0) &= \vec{u}_0(x)
+\end{align*}
+A common choice is to set the initial density to be uniform and the initial velocity to be zero.
+Once $\rho$ and $\vec{u}$ are initialized, a common modeling choice is to initialize the
+populations to the equilibrium implied by these macroscopic variables, i.e.
+$$f_p(x, 0) = f_p^{eq}(\rho_0(x), \vec{u}_0(x))$$
+
+Boundary conditions are a bit trickier.  
+An astute reader will quickly point out that with these equations as written,
+any finite domain will have particles ``falling off the edge'' and without
+sensible treatment of boundary conditions, the simulation would just report
+that there were no particles left.  That would be sad.
+In general, a boundary condition in an LBM simulation can be expressed as 
+a linear combination of a constraint on the flux in a direction normal to a wall,
+and on the density itself.  
+Taking $\phi$ to denote the quantity of interest (can be density or velocity) 
+and $n$ the normal direction,
+$$b_1 \frac{\partial \phi}{\partial n}(x_b, t) + b_2 \phi(x_b, t) = b_3$$ 
+
+A few special cases are the most common.  
+When $\phi = \vec{u} = 0$, we have the \textbf{no slip} boundary condition.
+This is common and physically realistic.
+When $b1 = 0$, we have a Dirichlet boundary condition, in which the value is imposed.
+When $b2 = 0$, we have a Neumann boundary condition, in which the flux is imposed.
+When $b1 \ne 0$ and $\b2 \ne 0$, the boundary condition is mixed 
+(linear relationship between field value and flux) and is called a Robin boundary condition.
+In addition to no-slip boundary conditions, another common choice is for velocity
+to be fixed at an \textit{inlet} or \textit{outlet}.
+Finally, larger sytems can often be simulated using a \textit{periodic} boundary condition.
+For the simulation we ran of an artery, we imposed a non-slip boundary condition on the
+side walls of the artery, and a periodic boundary condition on the longitudinal direction,
+effectively modeling a longer artery with periodic stenoses.
+
+\section{Description of Code}
 
 \section{Parameters of the Simulation}
 
