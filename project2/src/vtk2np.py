@@ -126,8 +126,8 @@ def save_frames(dir_np):
             print(f'Completed frame {frame_num:7}.')
 
 # *********************************************************************************************************************
-# The root directory
-dir_root = os.path.join(os.getcwd(), 'data/RBC_0_Re10')
+# The root directory for data
+dir_root = os.path.join(os.getcwd(), '../data/RBC_0_Re10')
 # The relative directory with blood data
 dir_blood_rel = 'DIRDATA_BloodFlow/VTK'
 # The relative directory with drug data

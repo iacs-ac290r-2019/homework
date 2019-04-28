@@ -462,9 +462,9 @@ sten_beg = A - S//2
 sten_end = A + S//2
 
 # The directory with numpy arrays
-dir_np = os.path.join(os.getcwd(), 'data/RBC_0_Re10/Numpy')
+dir_np = os.path.join(os.getcwd(), '../data/RBC_0_Re10/Numpy')
 # Directory to outout figures
-dir_fig = os.path.join(os.getcwd(), 'figs')
+dir_fig = os.path.join(os.getcwd(), '../figs')
 
 # List of available frames
 frame_nums = frames_avail(dir_np)

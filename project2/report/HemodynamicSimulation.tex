@@ -15,7 +15,7 @@
 \usepackage[font=footnotesize]{caption}
 
 % MSE set graphics path
-\graphicspath{{figs/}}
+\graphicspath{{../figs/}}
 
 % Set-up for hypertext references
 \usepackage{hyperref,color,textcomp}
@@ -273,8 +273,99 @@ This code can be found in a repository named BUFFY our team created on Odyssey.
 We needed to fork the MUPHY repository so we could make edits and push changes.
 We named it BUFFY in homage to the hit TV show 
 \href{https://en.wikipedia.org/wiki/Buffy_the_Vampire_Slayer}{Buffy the Vampire Slayer}.
+Access to this repository can be provided to the teaching staff on request.
+We took snapshot of the most relevant Python scripts and saved them in our
+team repository (where we submit our coursework) in the directory \tty{/project2/BUFFY}.
+\tty{ShapePainter.py} creates a geometry for the system using the \tty{vtk} library.
+The artery is modeled with a simplified geometry 
+as a cylinder extending down the $z$ axis longitudinally.
+It has a radius $R$ on the healthy region and $G=R/2$ in the stenotic region.
+The length of the entire artery is $L$ and the length of the stenotic region is $S$.
+This image was provided with the problem statement and demonstrates
+the basic layout and parameter names:
+\begin{figure}[h!]
+\centering
+%\hspace*{-0.25in}
+\includegraphics[width=0.40\textwidth]{artery_geometry.png}
+\caption{Artery Geometry.}
+\end{figure}
+
+\colorbox{yellow}{IMAGE OF ACTUAL GEOMETRY WE GENERATED}
+
+\colorbox{yellow}{YUE TO SAY MORE ABOUT SHAPE PAINTING SCRIPT AND RUNS}
+
+The next code we wrote is the Python script that runs the simulation on MUPHY.
+Each simulation run had a file, conventionally named \tty{run2.py}, that kicks off the simulation.  
+The script that ran our baseline simulation is located in 
+\tty{scratchlfs/ac290r/project2/blood\_cells/BUFFY/RBC\_0\_Re10}
+(We tried to follow advice given to use organized directory names.
+While this is a bit long and slightly cryptic, we did at least follow a consistent scheme
+this time organized everything hierarchically!)
+We've included a copy of this file in project repository as well in
+\tty{project2/BUFFY/RBC\_0\_Re10} for convenience in grading our submission.
+
+The first part of this file sets the physical parameters for the simulation,
+e.g. the geometry of the cylinder and the viscosity.
+The Python module \tty{MagicUniverse} is the fancifully named interface to the BUFFY simulation engine.
+The script initializes simulation objects including:
+\begin{itemize}
+\item Universe
+\item Scale
+\item Mesh
+\item Fluid (for blood)
+\item Fluid (for drug)
+\item Tracker (for diagnostics)
+\end{itemize}
+These are all class instances from the \tty{MagicUniverse} module.
+Parameter values are set to the appropriate class instances.
+We set the boundary conditions to be periodic on the $z$ axis,
+and no-slip on the $x$ and $y$ axes.
+The alternative configuration would have been to create inlets and outlets
+at the start and end values of $z$.
+
+\colorbox{yellow}{YUE TO SAY MORE IF NECESSARY}
+
+To run this code on Odyssey (Harvard's supercomputing cluster in Western Massachusetts)
+we also wrote shell scripts that were submitted to the Odyssey job manager \tty{slurm}.
+The script to run the baseline simulation is called \tty{runrbc\_0.sh} and is located adjacent to \tty{run2.py}.  
+The key lines in this script set the job options and load the required modules.  
+Important flags include:
+\begin{itemize}
+\item \tty{-p shared} - run the job on the shared partition
+\item \tty{--reservation=ac290r} use the reservation so we don't have to wait in the queue to get 1024 CPUs 
+\item \tty{-t 1200} hold the job open for up 1200 minutes = 20 hours
+\item \tty{-n 512} run on a total of 512 CPU cores
+\item \tty{N 16} run on 16 nodes; we are therefore requesting 16 nodes with 32 cores each
+\item \tty{mem=64000} request 64,000 MB = 64 GB per node; that is a lot of memory, 1024 GB = 1 TB total
+\item \tty{--job-name=RBC0RE10} the descriptive job name refers to 0 red blood cells and Reynolds Number 10
+\item \tty{--output=RBC0RE10.out} the directory where output is written; matches the job name
+\end{itemize}
+
+The rest of the script loads the required modules and sets environment variables.
+We need modules for \tty{gcc} and \tty{openmpi}, provided by 
+\tty{gcc/7.1.0-fasrc01} and \tty{openmpi/3.1.1-fasrc01} respectively.
+The environment variables to set are \tty{MOEBIUS\_PATH} and \tty{PYTHONPATH}.
+These allow Python to find the MAGIC modules.
+In order to invoke the job as a Python 2 script with MPI, the 
+line of the script that kicks off the actual job is\\
+\tty{srun -n \$SLURM\_NTASKS --mpi=pmi2 python2 run2.py}
 
 \section{Parameters of the Simulation}
+\begin{itemize}
+\item $\nu$ = 0.1
+\item $\rho$ = 1
+\item NSTEP = 1000000
+\item NDIAG = 100
+\item NVTKFREQ = 1000
+\item $\bar{u}$ = 0.01
+\item Re = 10.0
+\item Pe = 10.0
+\item C0 = 0.01
+\item C1 = 1.0
+\item UNFREEZE\_TIME = 100000
+\item R = $\frac{Re * NU}{2  \bar{u}}$
+\item DIFFUSIVITY = $\frac{\bar{u} * R}{Pe}$
+\end{itemize}
 
 \section{Results}
 
