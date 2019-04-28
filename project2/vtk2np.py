@@ -54,8 +54,6 @@ def load_frame_vtu(frame_num):
     # Get the blood data from VTKI
     ds_blood = load_frame_type(frame_num, dir_blood)
 
-    # Extract the velocity and density keyed by cell (not point!)
-    # density = ds.point_arrays['density']
     # Get the velocity vel at POINTS
     vel = ds_blood.point_arrays['velocity']
     
@@ -67,20 +65,24 @@ def load_frame_vtu(frame_num):
     ds_drug = load_frame_type(frame_num, dir_drug)
     # Extract the density of the drug by cell; this is in the confusingly named field temperature
     drug = ds_drug.cell_arrays['temperature']
+
+    # Extract the density of the drug at points as well for contour plots
+    drug_point = ds_drug.point_arrays['density']
     
     # Return a tuple of 4 elements: velocity and density for blood and drug
-    return (rho, vel, drug)
+    return (rho, vel, drug, drug_point)
 
 def save_frame(frame_num, dir_np):
     """Load frame from VTU, save it as numpy array"""
     # Convert from VTU to numpy arrays
-    rho, vel, drug = load_frame_vtu(frame_num)
+    rho, vel, drug, drug_point = load_frame_vtu(frame_num)
     
     # Table of arrays and corresponding file name prefixes
     file_tbl = {
         'rho': rho,
         'vel': vel,
-        'drug': drug
+        'drug': drug,
+        'drug_point': drug_point
         }
     
     # Save each grid as a numpy array
