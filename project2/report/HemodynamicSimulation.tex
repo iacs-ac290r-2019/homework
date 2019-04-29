@@ -522,7 +522,6 @@ in this ostensisibly invariant quantity.
 The simulation has the total quantity increasing by 3.59\%.
 \begin{figure}[h!]
 \centering
-%\hspace*{-0.25in}
 \includegraphics[width=1.00\textwidth]{drug_tot.png}
 \caption{Total Drug Quantity in the System Over Time}
 \end{figure}
@@ -541,9 +540,8 @@ diffused and at a uniform concentration.
 In that case, the fraction of drug in the stenotic region would be equal to the volume fraction.  
 By comparing these two quantities, we can develop an intuition as to how much 
 the drug has been delivered vs. its equilibrium.
-\begin{figure}[h!]
+\begin{figure}
 \centering
-%\hspace*{-0.25in}
 \includegraphics[width=1.00\textwidth]{drug_frac.png}
 \caption{Relative Drug Delivery to Stenotic Region Over Time}
 \end{figure}
@@ -562,7 +560,7 @@ There is also an interesting effect where the speed is greatest not at the cente
 This is not a permanent feature of the flow; the ``hot spot'' moves around.
 
 % \begin{figure}[H]
-\begin{figure}[h!]
+\begin{figure}
 \centering
 \hspace*{-0.25in}
 \includegraphics[width=0.8\textwidth]{contour_speed/contour_speed_z_500_t_800.png}
@@ -592,7 +590,7 @@ in treating patients, we would need to do additional work to get a definitive an
 whether the periodic boundary conditions on the $x$ and $y$ axes were incorrect.
 
 %\begin{figure}[H]
-\begin{figure}[h!]
+\begin{figure}
 \centering
 \hspace*{-0.25in}
 \vspace*{-0.50in}
@@ -629,10 +627,17 @@ This allows us to compare profiles at different time and develop an intuition
 about how the bolus migrates left to right and diffuses outward over time.
 Without a common scaling, all the charts look very similar, and it is
 much harder understand the interplay between advection and diffusion.
-We plot the profile at times of 200, 300, 400, 600, 800 and 1000 milliseconds.
-The profile at 
+We plot the profile at times of 100, 200, 300, 400, 600, 800 and 1000 milliseconds.
+The profile at 100 shows a spike with the density at 1.0 in the bolus and 0.01 elsewher.
+By 100 milleseconds it has diffused and looks like a normal distribution.
+Because of the periodic boundary, the left tail of the distribution wraps around
+to the right side of the plot.  
+Over the succeseding time steps we can see the peak widening out and
+gradually drifting to the right with the advection.
+By the time we reach 1.0 seconds the profile has leveled out substantially,
+though we can still see that concentration in the stenotic region is lower.
 
-\begin{figure}[h!]
+\begin{figure}
 \centering
 \hspace*{-0.25in}
 \includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_100.png}
@@ -646,14 +651,89 @@ The profile at
 \hspace*{-0.25in}
 \includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_800.png}
 \includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_1000.png}
-% \caption{Longitudinal drug profile at times of 100, 200, 300, 400, 500, 600, 800 and 1000 ms}
 \end{figure}
 
 \newpage
 \section{Conclusions and Future Work}
+\subsection{Things we Learned About This Hemodynamic System and Future Work}
+In our baseline simulation, we found that a system with these physical
+parameters will get fairly close to equilibrium concentrations within a time horizon of 1.0 second.  
+If these parameters are a reasonably accurate approximation to the hemodynamics of a large
+artery receiving treatement via a bolus, the high level conclusion is that the specific geometry
+and flows are probably not that important.  
+The drug molecules are going to diffuse into the stenotic region, and the concentration will
+be near equilibrium levels by the patient's first heartbeat.
+The main conclusion from the base case may be that if we want to make useful predictions
+of drug delivery, we have to use a more realistic model of a human circulatory system
+with a more complete geometry of the arteries and veins.
+
+In light of our difficulties with the RBC simulation, and the relative lack of importance
+in larger arterial systems, the most fruitful direction for future work in this specific problem
+area would probably be for a larger, more phyiologically accurate mapping of the circulatory system.  
+Computationally, the optimal direction would most likely be to shift from CPU to GPU simulations.
+
+At this point we must address the elephant in the room: 
+all of our simulations including red blood cells ended in failure.
+Clearly, these failed simulations didn't tell us anything about the dynamics of this system.
+They did teach us about Extreme Computing.
+
+\subsection{Things We Learned About Extreme Computing}
+At the risk of a cliche, the first conclusion is that Extreme Computing is ... hard.
+This is the second module, and the second time we experienced major failures on 
+our most ambitious computing job and needed to analyze a smaller job as a fallback plan.
+While running the computational jobs, we learned some common-sense principles that
+were also suggested by our instructors.  
+
+It is advisable to run smaller test cases before launching a full scale simulation.
+Some errors may manifest themselves at the smaller scale, 
+and it is less expensive in both time and computing resources to troubleshoot them
+on a smaller experimental run.
+A second lesson learned was less obvious to us.  
+Some errors have a non-deterministic (i.e. random) aspect to them,
+and submitting the same job repeatedly may help.
+This is quite different from our experience running regular sized programs on a single
+PC, which almost always behave the same way.
+Albert Einstein is said to have quipped that the definition of insanity is doing the same thing 
+over and over again and expecting different results.
+A corollary may be that only insane people should try Extreme Computing.
+
+As we reach the end of the course, we will close with some more 
+philosophical comments about Extreme Computing.
+People are more likely to say they do something at the limits than to actually do it.
+Talk is cheap.  What does it mean to do any endeavor in the extreme?
+The sine que non is the risk of failure.
+
+In honor of Simone's past work with the Ferrari F1 racing team, we can make this point by analogy.  
+What is the difference between driving a car and racing a car?
+When we drive, we expect to get from point A to point B, with a preference to go faster, but we are NOT willing to crash.
+When we watch a professional race car driver on TV, we expect them to go insanely fast, and accept that sometimes 
+they WILL crash (we don't accept that they will get injured anymore).
+This weekend at the Azerbaijan Gran Prix, the young star on the Ferrari Team Charles Leclerc 
+posted the best time in the last practice session, 
+then proceeded to put his multimillion euro SF90 race car into the wall. \\
+\includegraphics[width=1.00\textwidth]{pictures/charles_leclerc_crash.jpg}\\
+After the crash, Leclerc said ``I am so stupid'' on the team radio twice.
+But is he stupid? Of course not!  
+Otherwise he wouldn't be getting paid millions of euros a year to race cars
+by the most iconic team in the sport.
+In order to achieve a lap time fast enough for a shot at pole position, 
+Leclerc needed to take risks and take the preceding corner very close to the wall.
+He was the second driver of the day to crash in almost the exact same spot.
+Here is a more hopeful image.  
+It shows Leclerc being congratulated by Lewis Hamilton after his third place finish in Bahrain.\\
+\includegraphics[width=1.00\textwidth]{pictures/charles_leclerc_champagne.jpg}
+Looking back on this module and this course, we feel like Charles Leclerc, 
+but maybe a bit more like he felt on Saturday than he did on the podium.
+We've pushed hard and done our best, but we ate the wall more than once.
+
+We will conclude with a page from the playbook of all the best drivers, 
+who always thank their team at the end of the race.
+We give our sincere thanks to the course staff and the team at Odyssey 
+for sharing their knowledge and responding to our questions at all hours.
+
+\textbf{ "Grazie mille, grazie ragazzi."}
 
 %% bibliography
-
 \begin{thebibliography}{9}
 \bibitem{exo} 
 Succi, Sauro: The Lattice Boltmann Equation for Fluid Dynamics and Beyond
