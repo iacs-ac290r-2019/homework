@@ -9,6 +9,7 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{parskip}
+\usepackage{float}
 
 % MSE Make margins a bit smaller
 \usepackage[margin=0.75in]{geometry}
@@ -463,19 +464,156 @@ We will explain in detail the various failures and their causes in the section b
 Fortunately, we did complete a successful run of the baseline case without red blood cells.
 We have made the best of a difficult situation by perofrming a complete analysis on the baseline case.
 
+\newpage
 \section{Results}
 
 \subsection{Failed Runs on Odyssey with Red Blood Cells}
 \colorbox{yellow}{YUE TO ENUMERATE VARIOUS FAILURES HERE USING EMAIL LOGS}
 
 \subsection{Drug Delivery Over Time}
+As described in greater detail in the Description of Code, we computed the quantity of drug
+in the stenotic region and the whole system by summing the density over cells.
+This was a simple sum of the density because each cell has a volume of 1.0.
+In general, we would need to sum over concencration times cell volume.
+We started by computing the total amount of drug simulated to be in the system,
+because it should remain constant after the simulation starts.
+Our frist attempt at this calculation incorrectly used points rather cells, and we noticed
+ a marked increase in drug over the first 1.0 second, greater then 10\%.
+This was an indication something was wrong and we realized we needed to use cells.
+Here is the plot of drug volume in the system.  
+The axis is scaled to start at zero so our eyes can read off the magnitude of the fluctuation
+in this ostensisibly invariant quantity.  
+The simulation has the total quantity increasing by 3.59\%.
+\begin{figure}[h!]
+\centering
+%\hspace*{-0.25in}
+\includegraphics[width=1.00\textwidth]{drug_tot.png}
+\caption{Total Drug Quantity in the System Over Time}
+\end{figure}
+
+Here is the requested plot showing the quantity of drug in the stenotic region.
+Because the absolute units in this problem are somewhat arbitrary,
+we are presenting the amount of drug in the system as a fraction of the total.
+We show the fraction in the stenotic region over time as the blue series.
+We compare this to a flat line in red, which is the fraction of the total volume
+occupied by the stenotic region.  
+This was computed by counting the cells in the stenotic region using the same
+mask we used for the drug quantity.  
+(The sum of volume is a simple cell count since each cell has volume 1.0).
+When the system reaches equilibrium, we would expect the drug to be completely
+diffused and at a uniform concentration.  
+In that case, the fraction of drug in the stenotic region would be equal to the volume fraction.  
+By comparing these two quantities, we can develop an intuition as to how much 
+the drug has been delivered vs. its equilibrium.
+\begin{figure}[h!]
+\centering
+%\hspace*{-0.25in}
+\includegraphics[width=1.00\textwidth]{drug_frac.png}
+\caption{Relative Drug Delivery to Stenotic Region Over Time}
+\end{figure}
+We can see that by the end of the first second, the drug delivery
+is approaching its equilibrium level, showing that it disperses quite rapidly.
 
 \subsection{Velocity Field - Contours of Speed and Streamlines}
+Here are two plots showing the contours of flow speed at time t=800 milliseconds, 
+when the flow is fairly well established.  
+We plot cross sections at two locations: 
+the center of the stenosis, $z=500$,
+and to the right of the stenosis at $z=800$.
+At the center of the stenosis, we can see that the flow is fastest in the center, and slowest close to the walls, as we would expect.
+The difference in speed is less pronounced but still present away from the stenosis.
+There is also an interesting effect where the speed is greatest not at the center, but to one side.
+This is not a permanent feature of the flow; the ``hot spot'' moves around.
+
+% \begin{figure}[H]
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=0.8\textwidth]{contour_speed/contour_speed_z_500_t_800.png}
+\includegraphics[width=0.8\textwidth]{contour_speed/contour_speed_z_800_t_800.png}
+\caption{Contours of Speed at time t=800 ms; at two locations, center and right of stenosis}
+\end{figure}
+
+Here are two analogous plots for the same two time instants and $z$ cross sections showing
+streamlines in the $XY$ plane instead.
+In looking at these plots, we are becoming suspicious that there may have been a 
+conceptual error in the boundary conditions.  
+Dr. Melchionne suggested that we set the periodicity flag to `111' indicating that all three
+components $x$, $y$ and $z$ have periodic boundaries.
+We had initially planned on setting this parameter of `001' indicating that the $z$ axis
+was periodic, but $x$ and $y$ were not.
+
+In looking at the last streamline plot above, it seems as if a strong flow has developed
+in the XY plane that is wrapping around from the southeast corner to the northwest corner.
+We are writing this remark too late in the development process 
+to re-run our simulation and post-processing pipeline.  
+As scientists we prefer to be honest and express some reservations about one element of this
+computation than to try to sweep difficulties under the rug.
+For the purposes of a course project under these time constraints, we believe this is a 
+solid effort that meets the requested requirements.  
+If this were a paper to be submitted to peer review or an analysis that would be used
+in treating patients, we would need to do additional work to get a definitive answer about
+whether the periodic boundary conditions on the $x$ and $y$ axes were incorrect.
+
+%\begin{figure}[H]
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\vspace*{-0.50in}
+\includegraphics[width=0.75\textwidth]{streamlines/streamlines_z_500_t_800.png}
+\includegraphics[width=0.75\textwidth]{streamlines/streamlines_z_800_t_800.png}
+\caption{Streamlines at time t=800 ms; at two locations, center and right of stenosis}
+\end{figure}
 
 \subsection{Drug Concentration - Contours}
+Here are two contour plots for the concentration of the drug at the center of the stenosis
+at $z=500$.  They are run at times of 200 and 800 milliseconds.
+The scale on these charts is tricky.  
+There is only a very small variation in concentration between the lowest and highest end of the scales.  
+Still the visual pattern is clear, and we can see that the drug concentration is highest in the
+center and lower on the edges.
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\vspace*{-0.50in}
+\includegraphics[width=0.75\textwidth]{contour_drug/contour_drug_z_500_t_200.png}
+\includegraphics[width=0.75\textwidth]{contour_drug/contour_drug_z_500_t_800.png}
+\caption{Drug concentration at center of stenosis at two times, 200 and 800 ms}
+\end{figure}
 
 \subsection{Longitudinal Drug Profile vs. Time}
+We would like to reiterate that we needed to apply a small degree of smoothing
+to generate interpretable plots for the drug profile.  
+We computed the concentration as a function of $z$ and $t$ using the finest resolution
+possible, $z=1$.  Mostly the results were good, with just a few artifacts.
+We applied a simple filter with a width of $z=1$ to get a picture for what is really happening
+in the system.  
+All the plots below are scaled with the y-axis starting at zero.  
+This allows us to compare profiles at different time and develop an intuition
+about how the bolus migrates left to right and diffuses outward over time.
+Without a common scaling, all the charts look very similar, and it is
+much harder understand the interplay between advection and diffusion.
+We plot the profile at times of 200, 300, 400, 600, 800 and 1000 milliseconds.
+The profile at 
 
+\begin{figure}[h!]
+\centering
+\hspace*{-0.25in}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_100.png}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_200.png}\\[0.25in]
+\hspace*{-0.25in}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_300.png}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_400.png}\\[0.25in]
+\hspace*{-0.25in}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_500.png}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_600.png}\\[0.25in]
+\hspace*{-0.25in}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_800.png}
+\includegraphics[width=0.50\textwidth]{drug_profile/drug_profile_t_1000.png}
+% \caption{Longitudinal drug profile at times of 100, 200, 300, 400, 500, 600, 800 and 1000 ms}
+\end{figure}
+
+\newpage
 \section{Conclusions and Future Work}
 
 %% bibliography
