@@ -58,7 +58,7 @@ Yue Sun \\
 
 \section{Problem Statement and Motivation}
 AC 290R is a course on extreme computing with a focus on the application domain of fluid dynamics.
-In our first module we attempted a prototypical problem using the continuum description of fluids
+In our first module we took on a prototypical problem using the continuum description of fluids
 governed by the Navier-Stokes equation: 
 \href{https://en.wikipedia.org/wiki/Rayleigh%E2%80%93B%C3%A9nard_convection}{Rayleigh-B\'enard Convection}.
 In this module, we shift from the continuum to the mesoscale description and simulate fluids using  
@@ -107,19 +107,19 @@ LBM is based on the \href{https://en.wikipedia.org/wiki/Boltzmann_equation}{Bolt
 which describes the statistical behavior of a thermodynamic system and dates to 1872.
 The idea behind the Boltzmann Equation is that particles in the system each have 6 degrees
 of freedom, 3 positions and 3 momenta along the 3 coordinate directions $x$, $y$ and $z$.
-Molecules of a given type are physically indistuinguishable from each other,
+Molecules of a given type are physically indistinguishable from each other,
 so the system can be described completely by the populations of particles as a function
 of time and these six dimensions in the phase space.
 The Boltzmann Equation describes the evolution of such a system.
 The populations of particles change due to three terms: 
-forces applied to the system, diffusion, and collisions.
+diffusion, collisions, and external forces.
 
 LBM is a technique in computational fluid dynamics that uses the Boltzmann Equation
 to devise a numerical simulation of a fluid that can accurately capture mesoscale dynamics
 when it is tuned properly.
 The physical system is discretized, typically on a rectilinear grid 
 and most commonly one with cubic spacing.  
-Particle velocities are also discretized, with particles allowed to jump from
+Particle velocities are also discretized, with particles allowed to jump 
 from one grid point only to nearby grid points over one simulation step.
 The most common discretization scheme for 3D fluid simulations,
 which we used for this problem, is called D3Q19.
@@ -136,14 +136,14 @@ $i, j$, and each index has 2 choices in $\pm1$, leaving $4 \cdot 3 = 12$ second 
 The total weight of the 6 first neighbors is $6 \cdot \frac{1}{18} = \frac{1}{3}$.
 The total weight of the 12 second neighbors is $12 \cdot \frac{1}{36} = \frac{1}{3}$.
 
-The state of the simulation at a time step is given the \textit{population} of particles, 
+The state of the simulation at a time step is given by the \textit{population} of particles, 
 $f_p(x,t)$, where the suffix $p$ refers to the discrete velocities above.
-In a system with more than one type of particle, each populations of each particle must be maintained separately.  
-The movement of populations can be described by the Btatnagar-Gross-Krook update rule:
+In a system with more than one type of particle, populations of each particle must be maintained separately.  
+The movement of populations can be described by the Bhatnagar-Gross-Krook (BGK) update rule:
 $$f_p(x + hc_p, t + h) = f_p(x,t) + \omega(x,t) h \left[f_p^{eq}(\rho, \vec{u} - f_p)(x,t) + w_p \frac{c_p \cdot \vec{g}}{c_s^2} \right]$$
 Here is a brief description of all the terms appearing in this equation from left to right:
 \begin{itemize}
-\item $f_p$ is the actual population of the particle introduced above.
+\item $f_p$ is the population of the particle introduced above.
 \item h is the time step, often taken to be 1 in simplified notation
 \item $c_p$ is the displacement vector corresponding a given discrete velocity, e.g. \\
 $c_0 = (0,0,0)$,  $c_1 = (1,0,0)$, etc.
@@ -153,7 +153,7 @@ $c_0 = (0,0,0)$,  $c_1 = (1,0,0)$, etc.
 \item $w_p$ is the weight of particles with each velocity in the D3Q19 scheme; scalars that do not change over the simulation
 \item $c_p$ is the discrete velocity
 \item $\vec{g}$ is the acceleration applied to the body by external forces; the letter $g$ evokes gravity but it can be any external force
-\item $c_s$ is the speed of sound in dimensionless units on this lattice. 
+\item $c_s$ is the speed of sound in dimensionless units on this lattice, equal to $\sqrt{\nicefrac{1}{3}}$ here.
 (The speed of sound of the physical medium depends on the gradient of pressure with respect to density).
 \end{itemize}
 
@@ -410,7 +410,7 @@ While we computed drug quantities using cells, we chose to plot speed using poin
 The main programming challenge is generating a contour for data that doesn't cover an entire rectangular grid.
 This was done by creating an augmented grid with the full square cross section containing
 the circular cross section of the artery.
-Grid points outside of the artery were marked with a speed of 0, which was exlcuded from the
+Grid points outside of the artery were marked with a speed of 0, which was excluded from the
 range of values in the contour.\\
 \tty{plot\_streamlines} plots streamlines of the velocity in the $xy$ plane
 (i.e. velocity components $u$ and $v$) on a cross-sectional slice $z=z_{plot}$.
@@ -434,6 +434,7 @@ We appplied a smoothing operation before plotting the profile $B(z)$ in which
 we set each $b_z$ equal to the max of itself and its two neighbors $b_{z-1}$ and $b_{z+1}$.\\
 Plots of each type are displayed below in the Results section.
 
+\newpage
 \section{Parameters of the Simulation}
 These are the parameter values that we set at the start of the Python script for the baseline simulation
 with 0 red blood cells and a Reynold Number of 10.
@@ -444,9 +445,9 @@ with 0 red blood cells and a Reynold Number of 10.
 \item Re = 10.0 - the Reynolds number is dimensionless and characterize the turbulence / regularity of the flow
 \item Pe = 10.0 - the Pectet number is dimensionless and characterizes the importance of radial to axial diffusion
 \item R = $\nicefrac{Re * \nu}{2  \bar{u}}$ - the radius is implied by Reynolds number and velocity
-\item DIFFUSIVITY = $\frac{\bar{u} * R}{Pe}$ \colorbox{yellow}{SAY SOMETHING HERE}
-\item C0 = 0.01 - the baseline drug concentration away from the bolus
-\item C1 = 1.0 - the high drug concentration on the bolus at $t=0$
+\item DIFFUSIVITY = $\frac{\bar{u} * R}{Pe}$ is the dynamic viscosity applied to the drug fluid
+\item $C_0$ = 0.01 - the baseline drug concentration away from the bolus
+\item $C_1$ = 1.0 - the high drug concentration on the bolus at $t=0$
 \item NSTEP = 1000000 - total number of simulation steps; each step is one microsecond
 \item NDIAG = 100 - interval between diagnostics
 \item NVTKFREQ = 1000 - interval between VTK output frames
@@ -468,7 +469,42 @@ We have made the best of a difficult situation by perofrming a complete analysis
 \section{Results}
 
 \subsection{Failed Runs on Odyssey with Red Blood Cells}
-\colorbox{yellow}{YUE TO ENUMERATE VARIOUS FAILURES HERE USING EMAIL LOGS}
+This project had a very tight schedule due to a combination of the timing of the semester and the 
+limited availability of computational resources.  
+We worked diligently to acheive a successful simulation run with red blood cells, 
+but unfortunately all of our efforts ended in failure.  
+If we had more time and computational resources, we are optimistic that we could 
+achieve a simulation along the lines that we attempted.
+We detail these failures in the table below.
+As a quick scan through this table suggests, we experienced a diverse range of
+problems, including softwre problems (bugs in the code base); 
+incorrect parameter values that needed to be adjusted; and hardware failures.
+\begin{table}[h!]
+\begin{center}
+\label{tab:table1}
+\begin{tabular}{|c|c|c|c|c|} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+\hline
+\textbf{Job Name} & \textbf{Run Time} & \textbf{Exit Code } & \textbf{Count} & \textbf{Diagnostic}\\
+\hline
+RBC30RE10 &   &   & 2 & MPI Communications error \\
+RBC30RE10 & 10:30:32  & 1 & 1 & Equilibration insufficiently long \\
+RBC10RE10 & 03:49:42  & 1 & 1 & Segmentation fault (Address not mapped) \\
+RBC10RE10 &    & 137 & 2 & Segmentation fault (Address not mapped) \\
+RBC30RE10 & 01:33:09  & 0 & 1 & Node failure \\
+RBC10RE10 & 01:34:41  & 137 & 1 & Release of cells is too abrupt \\
+RBC5RE10 & 02:56:34  & 1 & 2 & Release of cells is too abrupt \\
+RBC5RE5 &    & 137 & 14 & MPI InfiniBand retry cound exceeded \\
+RBC5RE5 &    & 139 & 22 & Segmentation fault when loading modules \\
+RBC5RE5 & 02:08:38  & 1 & 1 & Adjusted cell release still too abrupt \\
+RBC5RE5 & 01:56:47  &   & 1 & Corrupted double-linked list \\
+\hline
+\end{tabular}
+\end{center}
+\caption*{History of failed jobs on Odyssey}
+\end{table}
+
+Fortunately we did achieve one successful run of our baseline case without red blood cells.
+In the section below, we outline our results in that baseline case.
 
 \subsection{Drug Delivery Over Time}
 As described in greater detail in the Description of Code, we computed the quantity of drug
@@ -538,7 +574,7 @@ Here are two analogous plots for the same two time instants and $z$ cross sectio
 streamlines in the $XY$ plane instead.
 In looking at these plots, we are becoming suspicious that there may have been a 
 conceptual error in the boundary conditions.  
-Dr. Melchionne suggested that we set the periodicity flag to `111' indicating that all three
+Dr. Melchionna suggested that we set the periodicity flag to `111' indicating that all three
 components $x$, $y$ and $z$ have periodic boundaries.
 We had initially planned on setting this parameter of `001' indicating that the $z$ axis
 was periodic, but $x$ and $y$ were not.
