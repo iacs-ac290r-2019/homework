@@ -23,6 +23,9 @@
 *.mp4
 *.mp3
 
+# ZIP archives
+*.zip
+
 # Ignore the BUFFY directory in project 2
 # Manually add a handful of important files
 project2/BUFFY
