@@ -76,6 +76,7 @@ c.setInletOutletMethod('closed')
 # f.setInletOutletMethod('closed')
 
 f.setStabilizeLB(True)
+f.setHomogeneousForce(0.0, 0.0, 0.00001)
 
 u.decorate()
 #f.setIOValue('inlet', 1, U_BAR)
